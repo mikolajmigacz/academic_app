@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/categories.dart';
 import '../shared/constants.dart';
 import '../widgets/category_item.dart';
+import '../widgets/app_drawer.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
@@ -19,8 +20,7 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.all(25),
         children: Provider.of<Categories>(context)
             .categories
-            .map((e) =>
-                CategoryItem(e[0] as String, e[1] as Icon, e[2] as String))
+            .map((e) => CategoryItem(e[0] as String, e[1] as IconData))
             .toList(),
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 200,
@@ -29,6 +29,7 @@ class HomePage extends StatelessWidget {
           mainAxisSpacing: 20,
         ),
       ),
+      drawer: AppDrawer(),
     );
   }
 }

@@ -6,18 +6,17 @@ import '../shared/constants.dart';
 
 class CategoryItem extends StatelessWidget {
   final String title;
-  final Icon icon;
-  final String routeName;
+  final IconData icon;
 
-  CategoryItem(this.title, this.icon, this.routeName);
+  CategoryItem(this.title, this.icon);
 
   void selectCategory(BuildContext ctx) {
-    Navigator.of(ctx).pushNamed(routeName
-        // , arguments: {
-        //   'id': id,
-        //   'title': title,
-        // }
-        );
+    // Navigator.of(ctx).pushNamed(routeName
+    // , arguments: {
+    //   'id': id,
+    //   'title': title,
+    // }
+    // );
   }
 
   @override
@@ -29,9 +28,16 @@ class CategoryItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(15),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            icon,
+            Expanded(
+              flex: 6,
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 45,
+              ),
+            ),
             FittedBox(
               child: Text(
                 title,
