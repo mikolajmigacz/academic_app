@@ -1,3 +1,4 @@
+import 'package:academic_app/pages/projects_page.dart';
 import 'package:flutter/material.dart';
 
 import '../shared/constants.dart';
@@ -11,12 +12,12 @@ class CategoryItem extends StatelessWidget {
   CategoryItem(this.title, this.icon);
 
   void selectCategory(BuildContext ctx) {
-    // Navigator.of(ctx).pushNamed(routeName
-    // , arguments: {
-    //   'id': id,
-    //   'title': title,
-    // }
-    // );
+    Navigator.of(ctx).pushNamed(ProjectsPage.routeName
+        // , arguments: {
+        //   'id': id,
+        //   'title': title,
+        // }
+        );
   }
 
   @override

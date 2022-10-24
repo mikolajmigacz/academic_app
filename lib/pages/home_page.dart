@@ -13,7 +13,17 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Academic'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30),
+          ),
+        ),
+        title: Image.asset(
+          '../assets/images/logo.png',
+          width: 75,
+          height: 75,
+          color: Colors.white,
+        ),
         centerTitle: true,
       ),
       body: GridView(

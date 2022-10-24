@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth.dart';
 
 class ProjectsPage extends StatelessWidget {
   static const routeName = '/projects';
@@ -11,7 +14,7 @@ class ProjectsPage extends StatelessWidget {
         title: Text('Projekty naukowe'),
         centerTitle: true,
       ),
-      body: Center(child: Text('ProjectPage')),
+      body: Center(child: Text('ProjectsPage')),
     );
   }
 }

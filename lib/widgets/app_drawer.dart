@@ -8,72 +8,88 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Column(
-        children: [
-          AppBar(
-            title: Text('Hello {nameOfUser}!'),
-          ),
-          ...Provider.of<Categories>(context).categories.map(
-                (e) => Container(
-                  padding: const EdgeInsets.all(2),
-                  margin: const EdgeInsets.all(5),
-                  child: ListTile(
-                    leading: Icon(
-                      e[1] as IconData,
-                      color: Constants.primaryColor,
-                      size: 30,
-                    ),
-                    title: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(15)),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Image.asset(
+              '../assets/images/logo_with_letters.png',
+              width: 150,
+              height: 150,
+              color: Colors.brown,
+            ),
+            Text(
+              'Bobby Joe',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Constants.primaryColor,
+                letterSpacing: 1,
+              ),
+            ),
+            SizedBox(height: 10),
+            Divider(height: 2),
+            ...Provider.of<Categories>(context).categories.map(
+                  (e) => Container(
+                    padding: const EdgeInsets.all(2),
+                    margin: const EdgeInsets.all(5),
+                    child: ListTile(
+                      leading: Icon(
+                        e[1] as IconData,
                         color: Constants.primaryColor,
+                        size: 30,
                       ),
-                      child: Center(
-                        child: Text(
-                          e[0] as String,
-                          style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Constants.primaryTextColor),
+                      title: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                          color: Constants.primaryColor,
+                        ),
+                        child: Center(
+                          child: Text(
+                            e[0] as String,
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.normal,
+                                color: Constants.primaryTextColor),
+                          ),
                         ),
                       ),
+                      onTap: () {},
+                      // subtitle: Divider()
                     ),
-                    onTap: () {},
-                    // subtitle: Divider()
                   ),
                 ),
-              ),
-          Container(
-            padding: const EdgeInsets.all(2),
-            margin: const EdgeInsets.all(5),
-            child: ListTile(
-              leading: Icon(
-                Icons.exit_to_app,
-                color: Constants.primaryColor,
-                size: 30,
-              ),
-              title: Container(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(15)),
+            Container(
+              padding: const EdgeInsets.all(2),
+              margin: const EdgeInsets.all(5),
+              child: ListTile(
+                leading: Icon(
+                  Icons.exit_to_app,
                   color: Constants.primaryColor,
+                  size: 30,
                 ),
-                child: Center(
-                  child: Text(
-                    'Wyloguj',
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.normal,
-                        color: Constants.primaryTextColor),
+                title: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                    color: Constants.primaryColor,
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Wyloguj',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.normal,
+                          color: Constants.primaryTextColor),
+                    ),
                   ),
                 ),
+                onTap: () {},
+                // subtitle: Divider()
               ),
-              onTap: () {},
-              // subtitle: Divider()
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
