@@ -33,31 +33,16 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: Auth()),
-        ],
-        child: Consumer<Auth>(
-          builder: (ctx, auth, _) => MaterialApp(
-            theme: ThemeData(
-              primarySwatch: Colors.brown,
-              scaffoldBackgroundColor: Colors.white,
-              fontFamily: 'OpenSans',
-            ),
-            home: auth.isAuth
-                ? HomePage()
-                : FutureBuilder(
-                    future: auth.tryAutoLogin(),
-                    builder: (ctx, authResultSnapshot) =>
-                        authResultSnapshot.connectionState ==
-                                ConnectionState.waiting
-                            ? SplashScreen()
-                            : AuthPage(),
-                  ),
-            routes: {
-              ProjectsPage.routeName: (ctx) => ProjectsPage(),
-            },
-          ),
-        ));
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.brown,
+        scaffoldBackgroundColor: Colors.white,
+        fontFamily: 'OpenSans',
+      ),
+      home: AuthPage(),
+      routes: {
+        ProjectsPage.routeName: (ctx) => ProjectsPage(),
+      },
+    );
   }
 }

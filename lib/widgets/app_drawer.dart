@@ -86,9 +86,7 @@ class AppDrawer extends StatelessWidget {
                     ),
                   ),
                 ),
-                onTap: () {
-                  Provider.of<Auth>(context, listen: false).logout();
-                },
+                onTap: () {},
                 // subtitle: Divider()
               ),
             ),
