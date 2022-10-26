@@ -7,8 +7,6 @@ import '../widgets/category_item.dart';
 import '../widgets/app_drawer.dart';
 
 class HomePage extends StatelessWidget {
-  HomePage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,8 +26,7 @@ class HomePage extends StatelessWidget {
       ),
       body: GridView(
         padding: const EdgeInsets.all(25),
-        children: Provider.of<Categories>(context)
-            .categories
+        children: Categories.categories
             .map((e) => CategoryItem(e[0] as String, e[1] as IconData))
             .toList(),
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(

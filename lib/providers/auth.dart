@@ -1,101 +1,120 @@
 import 'dart:convert';
-import 'dart:html';
+import 'dart:async';
 
-import 'package:academic_app/providers/helpers.dart';
-import 'package:academic_app/shared/constants.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../models/http_exception.dart';
+import '../shared/constants.dart';
 
 class Auth with ChangeNotifier {
-  //Important data :
-  // author_id , eid, orcid, name, surname, document count, univeristy name, univeristy id, university city, university country
-  Future<dynamic> returnScoupusAuthorDataRequest(
-      String firstName, String lastName, String city) async {
-    const url = 'https://api.elsevier.com/content/search/author';
-    var queryParameters = await {
-      'apiKey': Constants.apiKeyScoupus,
-      'insttoken': Constants.instTokenScoupus,
-      'count': '1',
-      'query':
-          'AFFIL($city and agh) AND AUTHFIRST($firstName) AND AUTHLASTNAME($lastName)'
-    };
-    final urlToReq = await Helpers().changeUrlToRequest(url);
-    final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
-    final response = await http.get(finalUrl, headers: queryParameters);
-    print(response.body);
-    return jsonDecode(response.body);
+  String _token;
+  DateTime _expiryDate;
+  String _userId;
+  Timer _authTimer;
+
+  bool get isAuth {
+    return token != null;
   }
 
-  //Important data :
-  //name of every document, number of citations for each document,
-  Future<dynamic> returnScoupsSearch(String authorScopusId) async {
-    const url = 'https://api.elsevier.com/content/search/scopus';
-    var queryParameters = await {
-      'apiKey': Constants.apiKeyScoupus,
-      'insttoken': Constants.instTokenScoupus,
-      'query': 'AU-ID($authorScopusId)'
-    };
-    final urlToReq = await Helpers().changeUrlToRequest(url);
-    final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
-    final response = await http.get(finalUrl, headers: queryParameters);
-    print(response.body);
-    return jsonDecode(response.body);
+  String get token {
+    if (_expiryDate != null &&
+        _expiryDate.isAfter(DateTime.now()) &&
+        _token != null) {
+      return _token;
+    }
+    return null;
   }
 
-  Future<dynamic> returnAuthorRetrieval(String authorScopusId) async {
-    var url =
-        'https://api.elsevier.com/content/author/author_id/$authorScopusId';
-    var queryParameters = await {
-      'httpAccept': 'application/json',
-      'apiKey': Constants.apiKeyScoupus,
-      'insttoken': Constants.instTokenScoupus,
-    };
-    final urlToReq = await Helpers().changeUrlToRequest(url);
-    final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
-    final response = await http.get(finalUrl, headers: queryParameters);
-    print(response.body);
-    return jsonDecode(response.body);
-  }
-//  AUTHOR ID
-//   final authorScoupusID = responseData['search-results']['entry'][0]
-//             ['dc:identifier']
-//         .toString()
-//         .substring(responseData['search-results']['entry'][0]['dc:identifier']
-//                 .toString()
-//                 .indexOf(':') +
-//             1);
-
-// Important data
-// authorScopusId, orcid,eid, amount of documents, cited by count, citation count,data about univeristy(name,address)
-  Future<dynamic> returnAuthorRetrival(String authorScopusId) async {
-    const url = 'https://api.elsevier.com/content/author';
-    var queryParameters = await {
-      'httpAccept': 'application/json',
-      'apiKey': Constants.apiKeyScoupus,
-      'insttoken': Constants.instTokenScoupus,
-      'author_id': '$authorScopusId'
-    };
-    final urlToReq = await Helpers().changeUrlToRequest(url);
-    final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
-    final response = await http.get(finalUrl, headers: queryParameters);
-    print(response.body);
-    return jsonDecode(response.body);
+  String get userId {
+    return _userId;
   }
 
-  //nothing new
-  Future<dynamic> returnAbstractRetrieval(String authorScopusId) async {
-    var url =
-        'https://api.elsevier.com/content/abstract/scopus_id/$authorScopusId';
-    var queryParameters = await {
-      'httpAccept': 'application/json',
-      'apiKey': Constants.apiKeyScoupus,
-      'insttoken': Constants.instTokenScoupus,
-      // 'author_id': '$authorScopusId'
-    };
-    final urlToReq = await Helpers().changeUrlToRequest(url);
-    final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
-    final response = await http.get(finalUrl, headers: queryParameters);
-    print(response.body);
-    return jsonDecode(response.body);
+  Future<void> _authenticate(
+      String email, String password, String urlSegment) async {
+    final url = Uri.parse(
+        'https://identitytoolkit.googleapis.com/v1/accounts:${urlSegment}?key=${Constants.apiKey}');
+    try {
+      final response = await http.post(
+        url,
+        body: json.encode(
+          {
+            'email': email,
+            'password': password,
+            'returnSecureToken': true,
+          },
+        ),
+      );
+      final responseData = json.decode(response.body);
+      if (responseData['error'] != null) {
+        throw HttpException(responseData['error']['message']);
+      }
+      _token = responseData['idToken'];
+      _userId = responseData['localId'];
+      _expiryDate = DateTime.now()
+          .add(Duration(seconds: int.parse(responseData['expiresIn'])));
+      _logoutIfTokenExpired();
+      notifyListeners();
+      final prefs = await SharedPreferences.getInstance();
+      final userData = json.encode({
+        'token': _token,
+        'userId': _userId,
+        'expiryDate': _expiryDate.toIso8601String(),
+      });
+      prefs.setString('userData', userData);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  Future<void> signUp(String email, String password) async {
+    return _authenticate(email, password, 'signUp');
+  }
+
+  Future<void> login(String email, String password) {
+    return _authenticate(email, password, 'signInWithPassword');
+  }
+
+  Future<bool> tryAutoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey('userData')) {
+      return false;
+    }
+    final extractedUserData =
+        json.decode(prefs.getString('userData')) as Map<String, Object>;
+    final expiryDate = DateTime.parse(extractedUserData['expiryDate']);
+
+    if (expiryDate.isBefore(DateTime.now())) {
+      return false;
+    }
+    _token = extractedUserData['token'];
+    _userId = extractedUserData['userId'];
+    _expiryDate = expiryDate;
+    notifyListeners();
+    _logoutIfTokenExpired();
+    return true;
+  }
+
+  Future<void> logout() async {
+    _token = null;
+    _userId = null;
+    _expiryDate = null;
+    if (_authTimer != null) {
+      _authTimer.cancel();
+      _authTimer = null;
+    }
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    // prefs.remove('userData');
+    prefs.clear();
+  }
+
+  void _logoutIfTokenExpired() {
+    if (_authTimer != null) {
+      _authTimer.cancel();
+    }
+    final timeToExpiry = _expiryDate.difference(DateTime.now()).inSeconds;
+    _authTimer = Timer(Duration(seconds: timeToExpiry), logout);
   }
 }
