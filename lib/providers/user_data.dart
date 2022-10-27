@@ -2,18 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-class UserModel with ChangeNotifier {
+class UserData with ChangeNotifier {
   String uid;
   String email;
   String firstName;
   String surname;
   String city;
 
-  UserModel({this.uid, this.email, this.firstName, this.surname, this.city});
+  UserData({this.uid, this.email, this.firstName, this.surname, this.city});
 
   // receiving data from server
-  factory UserModel.fromMap(map) {
-    return UserModel(
+  factory UserData.fromMap(map) {
+    return UserData(
       uid: map['uid'],
       email: map['email'],
       firstName: map['firstName'],

@@ -7,7 +7,7 @@ import './shared/constants.dart';
 import './pages/home_page.dart';
 import './pages/projects_page.dart';
 import './pages/login_page.dart';
-import './providers/user_model.dart';
+import 'providers/user_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,9 +31,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: UserModel()),
+        ChangeNotifierProvider.value(value: UserData()),
       ],
-      child: Consumer<UserModel>(
+      child: Consumer<UserData>(
           builder: (ctx, userModel, _) => MaterialApp(
                 title: 'Academic',
                 theme: ThemeData(

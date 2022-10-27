@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 
-import '../providers/user_model.dart';
-import '../providers/user_model.dart';
+import '../providers/user_data.dart';
+import '../providers/user_data.dart';
 import '../shared/constants.dart';
 import './home_page.dart';
 
@@ -20,7 +21,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   // string for displaying the error Message
   String errorMessage;
-
   // our form key
   final _formKey = GlobalKey<FormState>();
   // editing Controller
@@ -33,6 +33,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var userData = Provider.of<UserData>(context);
     //first name field
     final firstNameField = TextFormField(
         autofocus: false,
@@ -199,7 +200,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
           minWidth: MediaQuery.of(context).size.width,
           onPressed: () {
-            signUp(emailEditingController.text, passwordEditingController.text);
+            signUp(userData, emailEditingController.text,
+                passwordEditingController.text);
           },
           child: Text(
             "SignUp",
@@ -265,12 +267,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  void signUp(String email, String password) async {
+  void signUp(UserData userData, String email, String password) async {
     if (_formKey.currentState.validate()) {
       try {
         await _auth
             .createUserWithEmailAndPassword(email: email, password: password)
-            .then((value) => {postDetailsToFirestore()})
+            .then((value) => {postDetailsToFirestore(userData)})
             .catchError((e) {
           Fluttertoast.showToast(msg: e.message);
         });
@@ -303,7 +305,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  postDetailsToFirestore() async {
+  postDetailsToFirestore(UserData userData) async {
     // calling our firestore
     // calling our user model
     // sedning these values
@@ -311,20 +313,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
     User user = _auth.currentUser;
 
-    UserModel userModel = UserModel();
-
     // writing all the values
-    userModel.email = user.email;
-    userModel.uid = user.uid;
-    userModel.firstName = firstNameEditingController.text;
-    userModel.surname = surnameEditingController.text;
-    userModel.city = cityNameEditingController.text;
+    userData.email = user.email;
+    userData.uid = user.uid;
+    userData.firstName = firstNameEditingController.text;
+    userData.surname = surnameEditingController.text;
+    userData.city = cityNameEditingController.text;
 
     await firebaseFirestore
         .collection("users")
         .doc(user.uid)
-        .set(userModel.toMap());
-    Fluttertoast.showToast(msg: "Account created successfully :) ");
+        .set(userData.toMap());
+    Fluttertoast.showToast(msg: "Account created successfully");
 
     Navigator.pushAndRemoveUntil((context),
         MaterialPageRoute(builder: (context) => HomePage()), (route) => false);

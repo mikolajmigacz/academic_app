@@ -1,3 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/user_data.dart';
 import '../shared/constants.dart';
 import './home_page.dart';
 import './register_page.dart';
@@ -28,6 +32,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    var userData = Provider.of<UserData>(context);
     //email field
     final emailField = TextFormField(
         autofocus: false,
@@ -92,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
           padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
           minWidth: MediaQuery.of(context).size.width,
           onPressed: () {
-            signIn(emailController.text, passwordController.text);
+            signIn(emailController.text, passwordController.text, userData);
           },
           child: Text(
             "Login",
@@ -161,12 +166,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // login function
-  void signIn(String email, String password) async {
+  void signIn(String email, String password, UserData userData) async {
     if (_formKey.currentState.validate()) {
       try {
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
             .then((uid) => {
+                  getDetailsFromFirestore(uid.user.uid, userData),
                   Fluttertoast.showToast(msg: "Login Successful"),
                   Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (context) => HomePage())),
@@ -199,5 +205,19 @@ class _LoginPageState extends State<LoginPage> {
         print(error.code);
       }
     }
+  }
+
+  getDetailsFromFirestore(String uid, UserData globalUserData) async {
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(uid)
+        .get()
+        .then((value) {
+      globalUserData.firstName = value['firstName'];
+      globalUserData.uid = value['uid'];
+      globalUserData.surname = value['surname'];
+      globalUserData.email = value['email'];
+      globalUserData.city = value['city'];
+    });
   }
 }
