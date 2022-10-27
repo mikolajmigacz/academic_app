@@ -279,11 +279,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         });
         await _auth
             .createUserWithEmailAndPassword(email: email, password: password)
-            .then((value) => {postDetailsToFirestore(userData)})
-            .catchError((e) {
+            .then((value) async {
+          await postDetailsToFirestore(userData);
+        }).catchError((e) {
           Fluttertoast.showToast(msg: e.message);
         });
-        while (!userData.isDataReady()) {}
       } on FirebaseAuthException catch (error) {
         switch (error.code) {
           case "invalid-email":
@@ -317,7 +317,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  postDetailsToFirestore(UserData userData) async {
+  Future<void> postDetailsToFirestore(UserData userData) async {
     // calling our firestore
     // calling our user model
     // sedning these values

@@ -95,7 +95,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 ),
                 onTap: () async {
                   await FirebaseAuth.instance.signOut();
-                  userData.clearData();
+                  await userData.clearData();
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (context) => const LoginPage()));
                 },

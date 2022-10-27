@@ -178,13 +178,12 @@ class _LoginPageState extends State<LoginPage> {
         });
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
-            .then((uid) => {
-                  print(uid.user.uid),
-                  getDetailsFromFirestore(uid.user.uid, userData),
-                  Fluttertoast.showToast(msg: "Login Successful"),
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => HomePage())),
-                });
+            .then((uid) async {
+          await getDetailsFromFirestore(uid.user.uid, userData);
+          Fluttertoast.showToast(msg: "Login Successful");
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => HomePage()));
+        });
       } on FirebaseAuthException catch (error) {
         switch (error.code) {
           case "invalid-email":
@@ -219,13 +218,13 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  getDetailsFromFirestore(String uid, UserData globalUserData) async {
+  Future<void> getDetailsFromFirestore(
+      String uid, UserData globalUserData) async {
     await FirebaseFirestore.instance
         .collection("users")
         .doc(uid)
         .get()
         .then((value) {
-      print(value['firstName']);
       globalUserData.firstName = value['firstName'];
       globalUserData.uid = value['uid'];
       globalUserData.surname = value['surname'];
