@@ -1,17 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
-import './providers/user_data.dart';
-import './providers/auth.dart';
-import './providers/categories.dart';
 import './shared/constants.dart';
 import './pages/home_page.dart';
 import './pages/projects_page.dart';
-import './pages/auth_page.dart';
-import './pages/splash_page.dart';
+import './pages/login_page.dart';
+import './providers/user_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,16 +29,24 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.brown,
-        scaffoldBackgroundColor: Colors.white,
-        fontFamily: 'OpenSans',
-      ),
-      home: AuthPage(),
-      routes: {
-        ProjectsPage.routeName: (ctx) => ProjectsPage(),
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: UserModel()),
+      ],
+      child: Consumer<UserModel>(
+          builder: (ctx, userModel, _) => MaterialApp(
+                title: 'Academic',
+                theme: ThemeData(
+                  primarySwatch: Colors.brown,
+                  scaffoldBackgroundColor: Colors.white,
+                  fontFamily: 'OpenSans',
+                ),
+                home: userModel.uid != null ? HomePage() : LoginPage(),
+                routes: {
+                  // HomePage.routeName: (ctx) => HomePage(),
+                  ProjectsPage.routeName: (ctx) => ProjectsPage(),
+                },
+              )),
     );
   }
 }

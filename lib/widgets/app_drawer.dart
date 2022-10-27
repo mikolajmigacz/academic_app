@@ -2,13 +2,13 @@ import 'package:academic_app/shared/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/auth.dart';
 import '../providers/categories.dart';
-import '../providers/user_data.dart';
+import '../providers/user_model.dart';
 
 class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final userData = Provider.of<UserModel>(context);
     return Drawer(
       child: SingleChildScrollView(
         child: Column(
@@ -20,7 +20,7 @@ class AppDrawer extends StatelessWidget {
               color: Colors.brown,
             ),
             Text(
-              'Bobby Joe',
+              '${userData.firstName} ${userData.surname}',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
