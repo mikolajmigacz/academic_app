@@ -1,3 +1,4 @@
+import 'package:academic_app/pages/splash_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +18,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  var _isLoading = false;
   // form key
   final _formKey = GlobalKey<FormState>();
 
@@ -115,49 +117,51 @@ class _LoginPageState extends State<LoginPage> {
             color: Colors.white,
             child: Padding(
               padding: const EdgeInsets.all(36.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(
-                        height: 200,
-                        child: Image.asset(
-                          "assets/images/logo_with_letters.png",
-                          fit: BoxFit.contain,
-                        )),
-                    SizedBox(height: 45),
-                    emailField,
-                    SizedBox(height: 25),
-                    passwordField,
-                    SizedBox(height: 35),
-                    loginButton,
-                    SizedBox(height: 15),
-                    Row(
+              child: _isLoading
+                  ? CircularProgressIndicator()
+                  : Form(
+                      key: _formKey,
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
-                          Text("Don't have an account? "),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          RegistrationScreen()));
-                            },
-                            child: Text(
-                              "SignUp",
-                              style: TextStyle(
-                                  color: Constants.primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15),
-                            ),
-                          )
-                        ])
-                  ],
-                ),
-              ),
+                          SizedBox(
+                              height: 200,
+                              child: Image.asset(
+                                "assets/images/logo_with_letters.png",
+                                fit: BoxFit.contain,
+                              )),
+                          SizedBox(height: 45),
+                          emailField,
+                          SizedBox(height: 25),
+                          passwordField,
+                          SizedBox(height: 35),
+                          loginButton,
+                          SizedBox(height: 15),
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text("Don't have an account? "),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                RegistrationScreen()));
+                                  },
+                                  child: Text(
+                                    "SignUp",
+                                    style: TextStyle(
+                                        color: Constants.primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15),
+                                  ),
+                                )
+                              ])
+                        ],
+                      ),
+                    ),
             ),
           ),
         ),
@@ -169,9 +173,13 @@ class _LoginPageState extends State<LoginPage> {
   void signIn(String email, String password, UserData userData) async {
     if (_formKey.currentState.validate()) {
       try {
+        setState(() {
+          _isLoading = true;
+        });
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
             .then((uid) => {
+                  print(uid.user.uid),
                   getDetailsFromFirestore(uid.user.uid, userData),
                   Fluttertoast.showToast(msg: "Login Successful"),
                   Navigator.of(context).pushReplacement(
@@ -203,6 +211,10 @@ class _LoginPageState extends State<LoginPage> {
         }
         Fluttertoast.showToast(msg: errorMessage);
         print(error.code);
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -213,6 +225,7 @@ class _LoginPageState extends State<LoginPage> {
         .doc(uid)
         .get()
         .then((value) {
+      print(value['firstName']);
       globalUserData.firstName = value['firstName'];
       globalUserData.uid = value['uid'];
       globalUserData.surname = value['surname'];

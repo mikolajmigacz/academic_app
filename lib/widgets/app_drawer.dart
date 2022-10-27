@@ -1,11 +1,18 @@
-import 'package:academic_app/shared/constants.dart';
+import 'package:academic_app/pages/login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/categories.dart';
 import '../providers/user_data.dart';
+import '../shared/constants.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
   @override
   Widget build(BuildContext context) {
     final userData = Provider.of<UserData>(context);
@@ -21,7 +28,7 @@ class AppDrawer extends StatelessWidget {
             ),
             Text(
               '${userData.firstName} ${userData.surname}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Constants.primaryColor,
@@ -86,8 +93,12 @@ class AppDrawer extends StatelessWidget {
                     ),
                   ),
                 ),
-                onTap: () {},
-                // subtitle: Divider()
+                onTap: () async {
+                  await FirebaseAuth.instance.signOut();
+                  userData.clearData();
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (context) => const LoginPage()));
+                },
               ),
             ),
           ],

@@ -1,3 +1,4 @@
+import 'package:academic_app/providers/scopus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,6 +11,9 @@ import './pages/login_page.dart';
 import 'providers/user_data.dart';
 
 void main() async {
+  // final data =
+  //     Scopus().returnScoupusAuthorDataRequest('Dorota', 'Byrska', 'Krakow');
+  // print(data);
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
@@ -32,6 +36,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: UserData()),
+        ChangeNotifierProvider.value(value: Scopus()),
       ],
       child: Consumer<UserData>(
           builder: (ctx, userModel, _) => MaterialApp(
@@ -43,7 +48,6 @@ class MyApp extends StatelessWidget {
                 ),
                 home: userModel.uid != null ? HomePage() : LoginPage(),
                 routes: {
-                  // HomePage.routeName: (ctx) => HomePage(),
                   ProjectsPage.routeName: (ctx) => ProjectsPage(),
                 },
               )),

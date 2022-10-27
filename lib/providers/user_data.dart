@@ -32,4 +32,23 @@ class UserData with ChangeNotifier {
       'city': city,
     };
   }
+
+  void clearData() {
+    uid = null;
+    email = null;
+    firstName = null;
+    surname = null;
+    city = null;
+  }
+
+  bool isDataReady() {
+    if (uid != null &&
+        email != null &&
+        firstName != null &&
+        surname != null &&
+        city != null) {
+      return true;
+    }
+    return false;
+  }
 }

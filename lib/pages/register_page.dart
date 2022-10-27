@@ -1,3 +1,4 @@
+import 'package:academic_app/pages/splash_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _auth = FirebaseAuth.instance;
-
+  var _isLoading = false;
   // string for displaying the error Message
   String errorMessage;
   // our form key
@@ -34,6 +35,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     var userData = Provider.of<UserData>(context);
+    // var scopusData = Provider.of<UserData>(context);
     //first name field
     final firstNameField = TextFormField(
         autofocus: false,
@@ -230,36 +232,38 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             color: Colors.white,
             child: Padding(
               padding: const EdgeInsets.all(36.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(
-                        height: 180,
-                        child: Image.asset(
-                          "assets/images/logo_with_letters.png",
-                          fit: BoxFit.contain,
-                        )),
-                    SizedBox(height: 45),
-                    firstNameField,
-                    SizedBox(height: 20),
-                    surnameField,
-                    SizedBox(height: 20),
-                    cityField,
-                    SizedBox(height: 20),
-                    emailField,
-                    SizedBox(height: 20),
-                    passwordField,
-                    SizedBox(height: 20),
-                    confirmPasswordField,
-                    SizedBox(height: 20),
-                    signUpButton,
-                    SizedBox(height: 15),
-                  ],
-                ),
-              ),
+              child: _isLoading
+                  ? CircularProgressIndicator()
+                  : Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          SizedBox(
+                              height: 180,
+                              child: Image.asset(
+                                "assets/images/logo_with_letters.png",
+                                fit: BoxFit.contain,
+                              )),
+                          SizedBox(height: 45),
+                          firstNameField,
+                          SizedBox(height: 20),
+                          surnameField,
+                          SizedBox(height: 20),
+                          cityField,
+                          SizedBox(height: 20),
+                          emailField,
+                          SizedBox(height: 20),
+                          passwordField,
+                          SizedBox(height: 20),
+                          confirmPasswordField,
+                          SizedBox(height: 20),
+                          signUpButton,
+                          SizedBox(height: 15),
+                        ],
+                      ),
+                    ),
             ),
           ),
         ),
@@ -270,12 +274,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   void signUp(UserData userData, String email, String password) async {
     if (_formKey.currentState.validate()) {
       try {
+        setState(() {
+          _isLoading = true;
+        });
         await _auth
             .createUserWithEmailAndPassword(email: email, password: password)
             .then((value) => {postDetailsToFirestore(userData)})
             .catchError((e) {
           Fluttertoast.showToast(msg: e.message);
         });
+        while (!userData.isDataReady()) {}
       } on FirebaseAuthException catch (error) {
         switch (error.code) {
           case "invalid-email":
@@ -301,6 +309,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         }
         Fluttertoast.showToast(msg: errorMessage);
         print(error.code);
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }

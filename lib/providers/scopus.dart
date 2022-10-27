@@ -7,6 +7,13 @@ import '../shared/constants.dart';
 import './helpers.dart';
 
 class Scopus with ChangeNotifier {
+  String authorId;
+  String eid;
+  String orcid;
+  //lista map<tytul dokumentu : liczba cytacji"
+  List<Map<String, int>> createDocuments;
+  String universityName;
+
   // SCOPUS API FUNCTIONS
 
   //Important data :
@@ -24,7 +31,6 @@ class Scopus with ChangeNotifier {
     final urlToReq = await Helpers().changeUrlToRequest(url);
     final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
     final response = await http.get(finalUrl, headers: queryParameters);
-    print(response.body);
     return jsonDecode(response.body);
   }
 
