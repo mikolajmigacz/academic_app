@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/categories.dart';
+import '../providers/scopus.dart';
 import '../providers/user_data.dart';
 import '../shared/constants.dart';
 
@@ -16,6 +17,7 @@ class _AppDrawerState extends State<AppDrawer> {
   @override
   Widget build(BuildContext context) {
     final userData = Provider.of<UserData>(context);
+    final scopusData = Provider.of<Scopus>(context);
     return Drawer(
       child: SingleChildScrollView(
         child: Column(
@@ -96,6 +98,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 onTap: () async {
                   await FirebaseAuth.instance.signOut();
                   await userData.clearData();
+                  await scopusData.clearData();
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (context) => const LoginPage()));
                 },

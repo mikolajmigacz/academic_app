@@ -1,13 +1,17 @@
+import 'package:academic_app/providers/scopus.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/categories.dart';
+import '../providers/user_data.dart';
 import '../widgets/category_item.dart';
 import '../widgets/app_drawer.dart';
 
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final userData = Provider.of<UserData>(context);
+    final scopusData = Provider.of<Scopus>(context);
     return Scaffold(
       appBar: AppBar(
         shape: const RoundedRectangleBorder(
@@ -23,17 +27,24 @@ class HomePage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: GridView(
-        padding: const EdgeInsets.all(25),
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 200,
-          childAspectRatio: (3 / 2),
-          crossAxisSpacing: 20,
-          mainAxisSpacing: 20,
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Text('userData'),
+              Text('firstName: ${userData.firstName}'),
+              Text('surname: ${userData.surname}'),
+              Text('city: ${userData.city}'),
+              Text('email: ${userData.email}'),
+              Text('scopusData'),
+              Text('authorId: ${scopusData.authorId}'),
+              Text('orcid: ${scopusData.orcid}'),
+              Text('universityName: ${scopusData.universityName}'),
+              Text('scopusProfileLink: ${scopusData.scopusProfileLink}'),
+              Text('createdDocuments: ${scopusData.createdDocuments[0]}'),
+            ],
+          ),
         ),
-        children: Categories.categories
-            .map((e) => CategoryItem(e[0] as String, e[1] as IconData))
-            .toList(),
       ),
       drawer: AppDrawer(),
     );

@@ -1,14 +1,17 @@
-import 'package:academic_app/pages/splash_page.dart';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/user_data.dart';
+import '../providers/scopus.dart';
 import '../shared/constants.dart';
 import './home_page.dart';
 import './register_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import './splash_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key key}) : super(key: key);
@@ -35,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     var userData = Provider.of<UserData>(context);
+    var scopusData = Provider.of<Scopus>(context);
     //email field
     final emailField = TextFormField(
         autofocus: false,
@@ -96,12 +100,13 @@ class _LoginPageState extends State<LoginPage> {
       borderRadius: BorderRadius.circular(30),
       color: Constants.primaryColor,
       child: MaterialButton(
-          padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           minWidth: MediaQuery.of(context).size.width,
           onPressed: () {
-            signIn(emailController.text, passwordController.text, userData);
+            signIn(emailController.text, passwordController.text, userData,
+                scopusData);
           },
-          child: Text(
+          child: const Text(
             "Login",
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -131,13 +136,13 @@ class _LoginPageState extends State<LoginPage> {
                                 "assets/images/logo_with_letters.png",
                                 fit: BoxFit.contain,
                               )),
-                          SizedBox(height: 45),
+                          const SizedBox(height: 45),
                           emailField,
-                          SizedBox(height: 25),
+                          const SizedBox(height: 25),
                           passwordField,
-                          SizedBox(height: 35),
+                          const SizedBox(height: 35),
                           loginButton,
-                          SizedBox(height: 15),
+                          const SizedBox(height: 15),
                           Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
@@ -170,7 +175,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // login function
-  void signIn(String email, String password, UserData userData) async {
+  void signIn(String email, String password, UserData userData,
+      Scopus scopusData) async {
     if (_formKey.currentState.validate()) {
       try {
         setState(() {
@@ -179,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
             .then((uid) async {
-          await getDetailsFromFirestore(uid.user.uid, userData);
+          await getDetailsFromFirestore(uid.user.uid, userData, scopusData);
           Fluttertoast.showToast(msg: "Login Successful");
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => HomePage()));
@@ -219,7 +225,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> getDetailsFromFirestore(
-      String uid, UserData globalUserData) async {
+      String uid, UserData globalUserData, Scopus scopusData) async {
     await FirebaseFirestore.instance
         .collection("users")
         .doc(uid)
@@ -230,6 +236,27 @@ class _LoginPageState extends State<LoginPage> {
       globalUserData.surname = value['surname'];
       globalUserData.email = value['email'];
       globalUserData.city = value['city'];
+    });
+    await FirebaseFirestore.instance
+        .collection("scopus")
+        .doc(uid)
+        .get()
+        .then((value) {
+      scopusData.authorId = value['author_id'];
+      (json.decode(value['documents']) as List<dynamic>).forEach((element) {
+        // print(element['title']);
+        scopusData.createdDocuments.add({
+          'title': element['title'] as String,
+          'creator': element['creator'],
+          'publicationName': element['publicationName'] as String,
+          'dateOfCreation': element['dateOfCreation'] as String,
+          'citedByCount': element['citedByCount'] as String,
+          'link': element['link'] as String,
+        });
+      });
+      scopusData.orcid = value['orcid'];
+      scopusData.scopusProfileLink = value['scopus_profile_link'];
+      scopusData.universityName = value['universityName'];
     });
   }
 }

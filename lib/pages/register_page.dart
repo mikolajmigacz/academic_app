@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:academic_app/pages/splash_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/scopus.dart';
 import '../providers/user_data.dart';
 import '../providers/user_data.dart';
 import '../shared/constants.dart';
@@ -35,6 +38,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     var userData = Provider.of<UserData>(context);
+    var scopusData = Provider.of<Scopus>(context);
     // var scopusData = Provider.of<UserData>(context);
     //first name field
     final firstNameField = TextFormField(
@@ -147,7 +151,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         controller: passwordEditingController,
         obscureText: true,
         validator: (value) {
-          RegExp regex = new RegExp(r'^.{6,}$');
+          RegExp regex = RegExp(r'^.{6,}$');
           if (value.isEmpty) {
             return ("Password is required for login");
           }
@@ -202,7 +206,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
           minWidth: MediaQuery.of(context).size.width,
           onPressed: () {
-            signUp(userData, emailEditingController.text,
+            signUp(userData, scopusData, emailEditingController.text,
                 passwordEditingController.text);
           },
           child: Text(
@@ -271,7 +275,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  void signUp(UserData userData, String email, String password) async {
+  void signUp(UserData userData, Scopus scopusData, String email,
+      String password) async {
     if (_formKey.currentState.validate()) {
       try {
         setState(() {
@@ -280,7 +285,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         await _auth
             .createUserWithEmailAndPassword(email: email, password: password)
             .then((value) async {
-          await postDetailsToFirestore(userData);
+          await postDetailsToFirestore(userData, scopusData);
         }).catchError((e) {
           Fluttertoast.showToast(msg: e.message);
         });
@@ -317,7 +322,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  Future<void> postDetailsToFirestore(UserData userData) async {
+  Future<void> postDetailsToFirestore(
+      UserData userData, Scopus scopusData) async {
     // calling our firestore
     // calling our user model
     // sedning these values
@@ -332,10 +338,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     userData.surname = surnameEditingController.text;
     userData.city = cityNameEditingController.text;
 
+    await scopusData.returnScoupusAuthorDataRequest(
+        userData.firstName, userData.surname, userData.city);
+
+    await scopusData.returnScoupsSearch(scopusData.authorId);
+
     await firebaseFirestore
         .collection("users")
         .doc(user.uid)
         .set(userData.toMap());
+
+    await firebaseFirestore
+        .collection("scopus")
+        .doc(user.uid)
+        .set(scopusData.toMap());
     Fluttertoast.showToast(msg: "Account created successfully");
 
     Navigator.pushAndRemoveUntil((context),

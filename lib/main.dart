@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:academic_app/providers/scopus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -11,9 +13,6 @@ import './pages/login_page.dart';
 import 'providers/user_data.dart';
 
 void main() async {
-  // final data =
-  //     Scopus().returnScoupusAuthorDataRequest('Dorota', 'Byrska', 'Krakow');
-  // print(data);
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
