@@ -24,12 +24,11 @@ class Scopus with ChangeNotifier {
   // receiving data from server
   factory Scopus.fromMap(map) {
     return Scopus(
-      authorId: map['authorId'],
-      orcid: map['orcid'],
-      scopusProfileLink: map['scopusProfileLink'],
-      universityName: map['universityName'],
-      createdDocuments: map['createdDocuments'],
-    );
+        authorId: map['authorId'],
+        orcid: map['orcid'],
+        scopusProfileLink: map['scopusProfileLink'],
+        universityName: map['universityName'],
+        createdDocuments: map['createdDocuments'] as List<Map<String, String>>);
   }
 
   // sending data to our server

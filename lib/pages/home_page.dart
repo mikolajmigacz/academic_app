@@ -41,7 +41,7 @@ class HomePage extends StatelessWidget {
               Text('orcid: ${scopusData.orcid}'),
               Text('universityName: ${scopusData.universityName}'),
               Text('scopusProfileLink: ${scopusData.scopusProfileLink}'),
-              Text('createdDocuments: ${scopusData.createdDocuments[0]}'),
+              Text('createdDocuments: ${scopusData.createdDocuments[4]}'),
             ],
           ),
         ),

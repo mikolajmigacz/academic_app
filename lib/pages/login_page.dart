@@ -242,21 +242,21 @@ class _LoginPageState extends State<LoginPage> {
         .doc(uid)
         .get()
         .then((value) {
-      scopusData.authorId = value['author_id'];
-      (json.decode(value['documents']) as List<dynamic>).forEach((element) {
-        // print(element['title']);
-        scopusData.createdDocuments.add({
-          'title': element['title'] as String,
-          'creator': element['creator'],
-          'publicationName': element['publicationName'] as String,
-          'dateOfCreation': element['dateOfCreation'] as String,
-          'citedByCount': element['citedByCount'] as String,
-          'link': element['link'] as String,
-        });
-      });
+      scopusData.authorId = value['authorId'];
       scopusData.orcid = value['orcid'];
-      scopusData.scopusProfileLink = value['scopus_profile_link'];
+      scopusData.scopusProfileLink = value['scopusProfileLink'];
       scopusData.universityName = value['universityName'];
+      scopusData.createdDocuments = [];
+      for (var element in (value['createdDocuments'] as List)) {
+        scopusData.createdDocuments.add({
+          'citedByCount': element['citedByCount'],
+          'creator': element['creator'],
+          'dateOfCreation': element['dateOfCreation'],
+          'link': element['link'],
+          'title': element['title'],
+          'publicationName': element['publicationName'],
+        });
+      }
     });
   }
 }
