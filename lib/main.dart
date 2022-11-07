@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-import 'package:academic_app/providers/scopus.dart';
+import 'package:academic_app/pages/trips_page.dart';
+import 'package:academic_app/providers/speeches.dart';
+import 'package:academic_app/providers/trips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,7 +12,9 @@ import './shared/constants.dart';
 import './pages/home_page.dart';
 import './pages/projects_page.dart';
 import './pages/login_page.dart';
-import 'providers/user_data.dart';
+import './pages/speeches_page.dart';
+import './providers/user_data.dart';
+import './providers/scopus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,18 +40,25 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: UserData()),
         ChangeNotifierProvider.value(value: Scopus()),
+        ChangeNotifierProvider.value(value: Speeches()),
+        ChangeNotifierProvider.value(value: Trips()),
       ],
       child: Consumer<UserData>(
-          builder: (ctx, userModel, _) => MaterialApp(
+          builder: (ctx, userData, _) => MaterialApp(
+                debugShowCheckedModeBanner: false,
                 title: 'Academic',
                 theme: ThemeData(
                   primarySwatch: Colors.brown,
                   scaffoldBackgroundColor: Colors.white,
                   fontFamily: 'OpenSans',
                 ),
-                home: userModel.uid != null ? HomePage() : LoginPage(),
+                home:
+                    // TripsPage(),
+                    userData.uid != null ? HomePage() : LoginPage(),
                 routes: {
                   ProjectsPage.routeName: (ctx) => ProjectsPage(),
+                  SpeechesPage.routeName: (ctx) => SpeechesPage(),
+                  TripsPage.routeName: (ctx) => TripsPage(),
                 },
               )),
     );

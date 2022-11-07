@@ -1,11 +1,13 @@
 import 'dart:convert';
 
+import 'package:academic_app/providers/speeches.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/trips.dart';
 import '../providers/user_data.dart';
 import '../providers/scopus.dart';
 import '../shared/constants.dart';
@@ -14,8 +16,6 @@ import './register_page.dart';
 import './splash_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key key}) : super(key: key);
-
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -39,6 +39,8 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     var userData = Provider.of<UserData>(context);
     var scopusData = Provider.of<Scopus>(context);
+    var speechesData = Provider.of<Speeches>(context);
+    var tripsData = Provider.of<Trips>(context);
     //email field
     final emailField = TextFormField(
         autofocus: false,
@@ -104,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
           minWidth: MediaQuery.of(context).size.width,
           onPressed: () {
             signIn(emailController.text, passwordController.text, userData,
-                scopusData);
+                scopusData, speechesData, tripsData);
           },
           child: const Text(
             "Login",
@@ -149,14 +151,14 @@ class _LoginPageState extends State<LoginPage> {
                                 Text("Don't have an account? "),
                                 GestureDetector(
                                   onTap: () {
-                                    Navigator.push(
+                                    Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
                                                 RegistrationScreen()));
                                   },
                                   child: Text(
-                                    "SignUp",
+                                    "Register here",
                                     style: TextStyle(
                                         color: Constants.primaryColor,
                                         fontWeight: FontWeight.bold,
@@ -176,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
 
   // login function
   void signIn(String email, String password, UserData userData,
-      Scopus scopusData) async {
+      Scopus scopusData, Speeches speechesData, Trips tripsData) async {
     if (_formKey.currentState.validate()) {
       try {
         setState(() {
@@ -185,7 +187,8 @@ class _LoginPageState extends State<LoginPage> {
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
             .then((uid) async {
-          await getDetailsFromFirestore(uid.user.uid, userData, scopusData);
+          await getDetailsFromFirestore(
+              uid.user.uid, userData, scopusData, speechesData, tripsData);
           Fluttertoast.showToast(msg: "Login Successful");
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => HomePage()));
@@ -224,8 +227,8 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> getDetailsFromFirestore(
-      String uid, UserData globalUserData, Scopus scopusData) async {
+  Future<void> getDetailsFromFirestore(String uid, UserData globalUserData,
+      Scopus scopusData, Speeches speechesData, Trips tripsData) async {
     await FirebaseFirestore.instance
         .collection("users")
         .doc(uid)
@@ -246,6 +249,7 @@ class _LoginPageState extends State<LoginPage> {
       scopusData.orcid = value['orcid'];
       scopusData.scopusProfileLink = value['scopusProfileLink'];
       scopusData.universityName = value['universityName'];
+      scopusData.hirischIndex = int.parse(value['hirischIndex']);
       scopusData.createdDocuments = [];
       for (var element in (value['createdDocuments'] as List)) {
         scopusData.createdDocuments.add({
@@ -258,5 +262,8 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     });
+    await scopusData.caluclateCitationsAmount();
+    await speechesData.fetchDataFromFirestore();
+    await tripsData.fetchDataFromFirestore();
   }
 }

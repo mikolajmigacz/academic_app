@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:academic_app/pages/login_page.dart';
 import 'package:academic_app/pages/splash_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -222,13 +223,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.red),
-          onPressed: () {
-            // passing this to our root
-            Navigator.of(context).pop();
-          },
-        ),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -265,6 +259,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           SizedBox(height: 20),
                           signUpButton,
                           SizedBox(height: 15),
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text("Already have an account? "),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => LoginPage()));
+                                  },
+                                  child: Text(
+                                    "Login now",
+                                    style: TextStyle(
+                                        color: Constants.primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15),
+                                  ),
+                                )
+                              ])
                         ],
                       ),
                     ),
@@ -337,11 +351,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     userData.firstName = firstNameEditingController.text;
     userData.surname = surnameEditingController.text;
     userData.city = cityNameEditingController.text;
-
     await scopusData.returnScoupusAuthorDataRequest(
         userData.firstName, userData.surname, userData.city);
 
     await scopusData.returnScoupsSearch(scopusData.authorId);
+
+    await scopusData.calculateHirischIndex();
+
+    await scopusData.caluclateCitationsAmount();
 
     await firebaseFirestore
         .collection("users")

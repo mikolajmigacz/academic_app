@@ -1,4 +1,9 @@
+import 'package:academic_app/pages/home_page.dart';
 import 'package:academic_app/pages/login_page.dart';
+import 'package:academic_app/pages/projects_page.dart';
+import 'package:academic_app/pages/speeches_page.dart';
+import 'package:academic_app/pages/trips_page.dart';
+import 'package:academic_app/providers/speeches.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,12 +23,13 @@ class _AppDrawerState extends State<AppDrawer> {
   Widget build(BuildContext context) {
     final userData = Provider.of<UserData>(context);
     final scopusData = Provider.of<Scopus>(context);
+    final speechesData = Provider.of<Speeches>(context);
     return Drawer(
       child: SingleChildScrollView(
         child: Column(
           children: [
             Image.asset(
-              '../assets/images/logo_with_letters.png',
+              "assets/images/logo_with_letters.png",
               width: 150,
               height: 150,
               color: Colors.brown,
@@ -39,73 +45,100 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
             SizedBox(height: 10),
             Divider(height: 2),
-            ...Categories.categories.map(
-              (e) => Container(
-                padding: const EdgeInsets.all(2),
-                margin: const EdgeInsets.all(5),
-                child: ListTile(
-                  leading: Icon(
-                    e[1] as IconData,
-                    color: Constants.primaryColor,
-                    size: 30,
-                  ),
-                  title: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(15)),
-                      color: Constants.primaryColor,
-                    ),
-                    child: Center(
-                      child: Text(
-                        e[0] as String,
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.normal,
-                            color: Constants.primaryTextColor),
-                      ),
-                    ),
-                  ),
-                  onTap: () {},
-                  // subtitle: Divider()
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(2),
-              margin: const EdgeInsets.all(5),
-              child: ListTile(
-                leading: Icon(
-                  Icons.exit_to_app,
-                  color: Constants.primaryColor,
-                  size: 30,
-                ),
-                title: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                    color: Constants.primaryColor,
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Wyloguj',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.normal,
-                          color: Constants.primaryTextColor),
-                    ),
-                  ),
-                ),
-                onTap: () async {
-                  await FirebaseAuth.instance.signOut();
-                  await userData.clearData();
-                  await scopusData.clearData();
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => const LoginPage()));
-                },
-              ),
-            ),
+            DrawerItem(
+                title: Categories.categories[0][0],
+                icon: Categories.categories[0][1],
+                func: () {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => HomePage()));
+                }),
+            DrawerItem(
+                title: Categories.categories[1][0],
+                icon: Categories.categories[1][1],
+                func: () {}),
+            DrawerItem(
+                title: Categories.categories[2][0],
+                icon: Categories.categories[2][1],
+                func: () {
+                  Navigator.of(context)
+                      .pushReplacementNamed(ProjectsPage.routeName);
+                }),
+            DrawerItem(
+                title: Categories.categories[3][0],
+                icon: Categories.categories[3][1],
+                func: () {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => SpeechesPage()));
+                }),
+            DrawerItem(
+                title: Categories.categories[4][0],
+                icon: Categories.categories[4][1],
+                func: () {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => TripsPage()));
+                }),
+            DrawerItem(
+                title: Categories.categories[5][0],
+                icon: Categories.categories[5][1],
+                func: () {}),
+            DrawerItem(
+                title: Categories.categories[6][0],
+                icon: Categories.categories[6][1],
+                func: () {}),
+            DrawerItem(
+              title: 'Wyloguj',
+              icon: Icons.exit_to_app,
+              func: () async {
+                await FirebaseAuth.instance.signOut();
+                await userData.clearData();
+                await scopusData.clearData();
+                await speechesData.clearData();
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => LoginPage()));
+              },
+            )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class DrawerItem extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Function func;
+  DrawerItem({this.title, this.icon, this.func});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(2),
+      margin: const EdgeInsets.all(5),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: Constants.primaryColor,
+          size: 30,
+        ),
+        title: Container(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(15)),
+            color: Constants.primaryColor,
+          ),
+          child: Center(
+            child: Text(
+              title,
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.normal,
+                  color: Constants.primaryTextColor),
+            ),
+          ),
+        ),
+        onTap: func,
+        // subtitle: Divider()
       ),
     );
   }

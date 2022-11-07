@@ -13,6 +13,8 @@ class Scopus with ChangeNotifier {
   List<Map<String, String>> createdDocuments = [];
   String universityName;
   String scopusProfileLink;
+  int hirischIndex;
+  int citationSummary = 0;
 
   Scopus(
       {this.authorId,
@@ -39,7 +41,28 @@ class Scopus with ChangeNotifier {
       'scopusProfileLink': scopusProfileLink,
       'createdDocuments': createdDocuments,
       'universityName': universityName,
+      'hirischIndex': hirischIndex.toString(),
     };
+  }
+
+  Future<void> calculateHirischIndex() async {
+    List helperList = [];
+    for (var document in createdDocuments) {
+      helperList.add(int.parse(document['citedByCount']));
+    }
+    helperList.sort((b, a) => a.compareTo(b));
+    for (var i = 0; i < helperList.length; i++) {
+      if (helperList[i] <= i + 1) {
+        hirischIndex = helperList[i];
+        return;
+      }
+    }
+  }
+
+  Future<void> caluclateCitationsAmount() async {
+    for (var document in createdDocuments) {
+      citationSummary += int.parse(document['citedByCount']);
+    }
   }
 
   Future<void> clearData() async {
@@ -48,6 +71,8 @@ class Scopus with ChangeNotifier {
     createdDocuments = [];
     universityName = '';
     scopusProfileLink = '';
+    hirischIndex = 0;
+    citationSummary = 0;
   }
   // SCOPUS API FUNCTIONS
 
@@ -69,10 +94,6 @@ class Scopus with ChangeNotifier {
 
     final responseBody = jsonDecode(response.body);
     final dataToReturn = <String, String>{
-      //   'name': responseBody['search-results']['entry'][0]['preferred-name']
-      //       ['given-name'],
-      //   'surname': responseBody['search-results']['entry'][0]['preferred-name']
-      //       ['surname'],
       'authorId': responseBody['search-results']['entry'][0]['dc:identifier']
           .toString()
           .substring(responseBody['search-results']['entry'][0]['dc:identifier']
@@ -82,8 +103,6 @@ class Scopus with ChangeNotifier {
       'orcid': responseBody['search-results']['entry'][0]['orcid'],
       'univeristyName': responseBody['search-results']['entry'][0]
           ['affiliation-current']['affiliation-name'],
-      //   'amount_of_documents': responseBody['search-results']['entry'][0]
-      //       ['document-count'],
       'scopusProfileLink': responseBody['search-results']['entry'][0]['link'][3]
           ['@href'],
     };
@@ -102,88 +121,62 @@ class Scopus with ChangeNotifier {
     var queryParameters = await {
       'apiKey': Constants.apiKeyScoupus,
       'insttoken': Constants.instTokenScoupus,
-      'query': 'AU-ID($authorScopusId)'
+      'query': 'AU-ID($authorScopusId)',
+      // 'start': '24'
     };
     final urlToReq = await Helpers().changeUrlToRequest(url);
-    final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
-    final response = await http.get(finalUrl, headers: queryParameters);
-    final responseBody = jsonDecode(response.body);
+    var finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
+    var response = await http.get(finalUrl, headers: queryParameters);
+    var responseBody = jsonDecode(response.body);
     final dataToReturn = <Map<String, String>>[];
-    for (var i = 0;
-        i <
-            int.parse(
-                responseBody['search-results']['opensearch:totalResults']);
-        i++) {
-      await dataToReturn.add({
-        'title': responseBody['search-results']['entry'][i]['dc:title'],
-        'creator': responseBody['search-results']['entry'][i]['dc:creator'],
-        'publicationName': responseBody['search-results']['entry'][i]
-            ['prism:publicationName'],
-        'dateOfCreation': responseBody['search-results']['entry'][i]
-            ['prism:coverDisplayDate'],
-        'citedByCount': responseBody['search-results']['entry'][i]
-            ['citedby-count'],
-        'link': responseBody['search-results']['entry'][i]['link'][2]['@href'],
-      });
+    int totalResults =
+        int.parse(responseBody['search-results']['opensearch:totalResults']);
+    if (totalResults > 25) {
+      for (var i = 0; i < (totalResults / 25).ceil(); i++) {
+        queryParameters['start'] = (i * 25).toString();
+        var finalUrl =
+            await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
+        var response = await http.get(finalUrl, headers: queryParameters);
+        var responseBody = jsonDecode(response.body);
+        int totalToFor;
+        if (i != ((totalResults / 25).ceil() - 1)) {
+          totalToFor = 25;
+        } else {
+          totalToFor = totalResults - (i * 25);
+        }
+        for (var i = 0; i < totalToFor; i++) {
+          await dataToReturn.add({
+            'title': responseBody['search-results']['entry'][i]['dc:title'],
+            'creator': responseBody['search-results']['entry'][i]['dc:creator'],
+            'publicationName': responseBody['search-results']['entry'][i]
+                ['prism:publicationName'],
+            'dateOfCreation': responseBody['search-results']['entry'][i]
+                ['prism:coverDisplayDate'],
+            'citedByCount': responseBody['search-results']['entry'][i]
+                ['citedby-count'],
+            'link': responseBody['search-results']['entry'][i]['link'][2]
+                ['@href'],
+          });
+        }
+      }
+    } else {
+      for (var i = 0; i < totalResults; i++) {
+        await dataToReturn.add({
+          'title': responseBody['search-results']['entry'][i]['dc:title'],
+          'creator': responseBody['search-results']['entry'][i]['dc:creator'],
+          'publicationName': responseBody['search-results']['entry'][i]
+              ['prism:publicationName'],
+          'dateOfCreation': responseBody['search-results']['entry'][i]
+              ['prism:coverDisplayDate'],
+          'citedByCount': responseBody['search-results']['entry'][i]
+              ['citedby-count'],
+          'link': responseBody['search-results']['entry'][i]['link'][2]
+              ['@href'],
+        });
+      }
     }
+
     createdDocuments = dataToReturn;
     return dataToReturn;
-  }
-
-  Future<dynamic> returnAuthorRetrieval(String authorScopusId) async {
-    var url =
-        'https://api.elsevier.com/content/author/author_id/$authorScopusId';
-    var queryParameters = await {
-      'httpAccept': 'application/json',
-      'apiKey': Constants.apiKeyScoupus,
-      'insttoken': Constants.instTokenScoupus,
-    };
-    final urlToReq = await Helpers().changeUrlToRequest(url);
-    final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
-    final response = await http.get(finalUrl, headers: queryParameters);
-    print(response.body);
-    jsonDecode(response.body);
-  }
-//  AUTHOR ID
-//   final authorScoupusID = responseData['search-results']['entry'][0]
-//             ['dc:identifier']
-//         .toString()
-//         .substring(responseData['search-results']['entry'][0]['dc:identifier']
-//                 .toString()
-//                 .indexOf(':') +
-//             1);
-
-// Important data
-// authorScopusId, orcid,eid, amount of documents, cited by count, citation count,data about univeristy(name,address)
-  Future<dynamic> returnAuthorRetrival(String authorScopusId) async {
-    const url = 'https://api.elsevier.com/content/author';
-    var queryParameters = await {
-      'httpAccept': 'application/json',
-      'apiKey': Constants.apiKeyScoupus,
-      'insttoken': Constants.instTokenScoupus,
-      'author_id': '$authorScopusId'
-    };
-    final urlToReq = await Helpers().changeUrlToRequest(url);
-    final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
-    final response = await http.get(finalUrl, headers: queryParameters);
-    print(response.body);
-    return jsonDecode(response.body);
-  }
-
-  //nothing new
-  Future<dynamic> returnAbstractRetrieval(String authorScopusId) async {
-    var url =
-        'https://api.elsevier.com/content/abstract/scopus_id/$authorScopusId';
-    var queryParameters = await {
-      'httpAccept': 'application/json',
-      'apiKey': Constants.apiKeyScoupus,
-      'insttoken': Constants.instTokenScoupus,
-      // 'author_id': '$authorScopusId'
-    };
-    final urlToReq = await Helpers().changeUrlToRequest(url);
-    final finalUrl = await Uri.https(urlToReq[0], urlToReq[1], queryParameters);
-    final response = await http.get(finalUrl, headers: queryParameters);
-    print(response.body);
-    return jsonDecode(response.body);
   }
 }
