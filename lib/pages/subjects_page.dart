@@ -15,9 +15,11 @@ class SubjectsPage extends StatefulWidget {
 
 class _SubjectsPageState extends State<SubjectsPage> {
   bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     final subjectsData = Provider.of<Subjects>(context);
+    final heightOfPage = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         shape: const RoundedRectangleBorder(
@@ -100,12 +102,48 @@ class _SubjectsPageState extends State<SubjectsPage> {
                     ),
                   ),
                 )
-              : ListView.builder(
-                  itemBuilder: (context, index) {
-                    return SubjectItem(subjectsData.subjects[index].title,
-                        subjectsData.removeSubject);
-                  },
-                  itemCount: subjectsData.subjects.length,
+              : Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            decoration: const BoxDecoration(
+                                shape: BoxShape.rectangle,
+                                color: Constants.primaryColor,
+                                borderRadius: BorderRadius.all(Radius.circular(
+                                  5.0,
+                                ))),
+                            child: Text(
+                              'Suma przedmiotów: ${subjectsData.subjects.length}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.normal,
+                                  color: Constants.primaryTextColor),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 4,
+                          ),
+                          Container(
+                            height: (heightOfPage * 0.9),
+                            child: ListView.builder(
+                              itemBuilder: (context, index) {
+                                return SubjectItem(
+                                    subjectsData.subjects[index].title,
+                                    subjectsData.removeSubject);
+                              },
+                              itemCount: subjectsData.subjects.length,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
@@ -129,24 +167,51 @@ class _SubjectsPageState extends State<SubjectsPage> {
   }
 
   Widget SubjectItem(String title, Function deleteFunc) {
-    return Container(
-      width: MediaQuery.of(context).size.width / 2,
-      child: Center(
-        child: Card(
-          elevation: 5,
-          child: Container(
-            margin: EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-            padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-            decoration: BoxDecoration(
-                color: Constants.primaryColor,
-                borderRadius: BorderRadius.all(Radius.circular(5.0))),
-            child: Column(
-              children: [
-                Text(title),
-              ],
+    return Center(
+      child: Column(
+        children: [
+          Card(
+            elevation: 5,
+            child: Container(
+              margin: EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+              padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+              decoration: BoxDecoration(
+                  color: Constants.primaryColor,
+                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.work_outline,
+                    size: 20,
+                    color: Constants.primaryTextColor,
+                  ),
+                  Text(
+                    title,
+                    style: TextStyle(
+                        color: Constants.primaryTextColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+          IconButton(
+            onPressed: () async {
+              setState(() {
+                _isLoading = true;
+              });
+              await deleteFunc(title);
+              setState(() {
+                _isLoading = false;
+              });
+            },
+            icon: Icon(
+              Icons.delete,
+              color: Colors.red,
+            ),
+          ),
+        ],
       ),
     );
   }

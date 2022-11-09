@@ -31,9 +31,7 @@ class Subjects with ChangeNotifier {
         for (var element in value['subjects'] as List) {
           subjects.add(Subject(title: element['title']));
         }
-      }).then((_) => subjects.forEach((element) {
-                print(element.title);
-              }));
+      });
     } catch (e) {
       print(e.toString());
     }
