@@ -1,7 +1,10 @@
 import 'dart:convert';
 
-import 'package:academic_app/pages/trips_page.dart';
+import 'package:academic_app/pages/subjects_page.dart';
+
+import './pages/trips_page.dart';
 import 'package:academic_app/providers/speeches.dart';
+import 'package:academic_app/providers/subjects.dart';
 import 'package:academic_app/providers/trips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -42,6 +45,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: Scopus()),
         ChangeNotifierProvider.value(value: Speeches()),
         ChangeNotifierProvider.value(value: Trips()),
+        ChangeNotifierProvider.value(value: Subjects()),
       ],
       child: Consumer<UserData>(
           builder: (ctx, userData, _) => MaterialApp(
@@ -59,6 +63,7 @@ class MyApp extends StatelessWidget {
                   ProjectsPage.routeName: (ctx) => ProjectsPage(),
                   SpeechesPage.routeName: (ctx) => SpeechesPage(),
                   TripsPage.routeName: (ctx) => TripsPage(),
+                  SubjectsPage.routeName: (ctx) => SubjectsPage(),
                 },
               )),
     );

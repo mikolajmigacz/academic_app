@@ -2,8 +2,10 @@ import 'package:academic_app/pages/home_page.dart';
 import 'package:academic_app/pages/login_page.dart';
 import 'package:academic_app/pages/projects_page.dart';
 import 'package:academic_app/pages/speeches_page.dart';
+import 'package:academic_app/pages/subjects_page.dart';
 import 'package:academic_app/pages/trips_page.dart';
 import 'package:academic_app/providers/speeches.dart';
+import 'package:academic_app/providers/subjects.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +26,7 @@ class _AppDrawerState extends State<AppDrawer> {
     final userData = Provider.of<UserData>(context);
     final scopusData = Provider.of<Scopus>(context);
     final speechesData = Provider.of<Speeches>(context);
+    final subjectsData = Provider.of<Subjects>(context);
     return Drawer(
       child: SingleChildScrollView(
         child: Column(
@@ -67,20 +70,23 @@ class _AppDrawerState extends State<AppDrawer> {
                 title: Categories.categories[3][0],
                 icon: Categories.categories[3][1],
                 func: () {
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => SpeechesPage()));
+                  Navigator.of(context)
+                      .pushReplacementNamed(SpeechesPage.routeName);
                 }),
             DrawerItem(
                 title: Categories.categories[4][0],
                 icon: Categories.categories[4][1],
                 func: () {
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => TripsPage()));
+                  Navigator.of(context)
+                      .pushReplacementNamed(TripsPage.routeName);
                 }),
             DrawerItem(
                 title: Categories.categories[5][0],
                 icon: Categories.categories[5][1],
-                func: () {}),
+                func: () {
+                  Navigator.of(context)
+                      .pushReplacementNamed(SubjectsPage.routeName);
+                }),
             DrawerItem(
                 title: Categories.categories[6][0],
                 icon: Categories.categories[6][1],
@@ -93,6 +99,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 await userData.clearData();
                 await scopusData.clearData();
                 await speechesData.clearData();
+                await subjectsData.clearData();
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => LoginPage()));
               },
