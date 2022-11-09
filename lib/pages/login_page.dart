@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:academic_app/providers/speeches.dart';
+import 'package:academic_app/providers/subjects.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -41,6 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     var scopusData = Provider.of<Scopus>(context);
     var speechesData = Provider.of<Speeches>(context);
     var tripsData = Provider.of<Trips>(context);
+    var subjectsData = Provider.of<Subjects>(context);
     //email field
     final emailField = TextFormField(
         autofocus: false,
@@ -106,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
           minWidth: MediaQuery.of(context).size.width,
           onPressed: () {
             signIn(emailController.text, passwordController.text, userData,
-                scopusData, speechesData, tripsData);
+                scopusData, speechesData, tripsData, subjectsData);
           },
           child: const Text(
             "Login",
@@ -177,8 +179,14 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // login function
-  void signIn(String email, String password, UserData userData,
-      Scopus scopusData, Speeches speechesData, Trips tripsData) async {
+  void signIn(
+      String email,
+      String password,
+      UserData userData,
+      Scopus scopusData,
+      Speeches speechesData,
+      Trips tripsData,
+      Subjects subjectsData) async {
     if (_formKey.currentState.validate()) {
       try {
         setState(() {
@@ -187,8 +195,8 @@ class _LoginPageState extends State<LoginPage> {
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
             .then((uid) async {
-          await getDetailsFromFirestore(
-              uid.user.uid, userData, scopusData, speechesData, tripsData);
+          await getDetailsFromFirestore(uid.user.uid, userData, scopusData,
+              speechesData, tripsData, subjectsData);
           Fluttertoast.showToast(msg: "Login Successful");
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => HomePage()));
@@ -227,8 +235,13 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> getDetailsFromFirestore(String uid, UserData globalUserData,
-      Scopus scopusData, Speeches speechesData, Trips tripsData) async {
+  Future<void> getDetailsFromFirestore(
+      String uid,
+      UserData globalUserData,
+      Scopus scopusData,
+      Speeches speechesData,
+      Trips tripsData,
+      Subjects subjectsData) async {
     await FirebaseFirestore.instance
         .collection("users")
         .doc(uid)
@@ -265,5 +278,6 @@ class _LoginPageState extends State<LoginPage> {
     await scopusData.caluclateCitationsAmount();
     await speechesData.fetchDataFromFirestore();
     await tripsData.fetchDataFromFirestore();
+    await subjectsData.fetchDataFromFirestore();
   }
 }
