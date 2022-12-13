@@ -1,13 +1,18 @@
 import 'dart:convert';
 
+import 'package:academic_app/providers/about_me.dart';
+import 'package:academic_app/providers/awards.dart';
+import 'package:academic_app/providers/projects.dart';
 import 'package:academic_app/providers/speeches.dart';
 import 'package:academic_app/providers/subjects.dart';
+import 'package:academic_app/providers/training.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/thesis.dart';
 import '../providers/trips.dart';
 import '../providers/user_data.dart';
 import '../providers/scopus.dart';
@@ -43,6 +48,11 @@ class _LoginPageState extends State<LoginPage> {
     var speechesData = Provider.of<Speeches>(context);
     var tripsData = Provider.of<Trips>(context);
     var subjectsData = Provider.of<Subjects>(context);
+    var thesiesData = Provider.of<Thesies>(context);
+    var projectsData = Provider.of<Projects>(context);
+    var trainingsData = Provider.of<Trainings>(context);
+    var awardsData = Provider.of<Awards>(context);
+    var aboutMeData = Provider.of<AboutMe>(context);
     //email field
     final emailField = TextFormField(
         autofocus: false,
@@ -107,8 +117,19 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           minWidth: MediaQuery.of(context).size.width,
           onPressed: () {
-            signIn(emailController.text, passwordController.text, userData,
-                scopusData, speechesData, tripsData, subjectsData);
+            signIn(
+                emailController.text,
+                passwordController.text,
+                userData,
+                scopusData,
+                speechesData,
+                tripsData,
+                subjectsData,
+                thesiesData,
+                projectsData,
+                trainingsData,
+                awardsData,
+                aboutMeData);
           },
           child: const Text(
             "Login",
@@ -186,7 +207,12 @@ class _LoginPageState extends State<LoginPage> {
       Scopus scopusData,
       Speeches speechesData,
       Trips tripsData,
-      Subjects subjectsData) async {
+      Subjects subjectsData,
+      Thesies thesiesData,
+      Projects projectsData,
+      Trainings trainingsData,
+      Awards awardsData,
+      AboutMe aboutMeData) async {
     if (_formKey.currentState.validate()) {
       try {
         setState(() {
@@ -195,11 +221,23 @@ class _LoginPageState extends State<LoginPage> {
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
             .then((uid) async {
-          await getDetailsFromFirestore(uid.user.uid, userData, scopusData,
-              speechesData, tripsData, subjectsData);
-          Fluttertoast.showToast(msg: "Login Successful");
-          Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => HomePage()));
+          await getDetailsFromFirestore(
+                  uid.user.uid,
+                  userData,
+                  scopusData,
+                  speechesData,
+                  tripsData,
+                  subjectsData,
+                  thesiesData,
+                  projectsData,
+                  trainingsData,
+                  awardsData,
+                  aboutMeData)
+              .then((value) {
+            Fluttertoast.showToast(msg: "Login Successful");
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => HomePage()));
+          });
         });
       } on FirebaseAuthException catch (error) {
         switch (error.code) {
@@ -241,7 +279,12 @@ class _LoginPageState extends State<LoginPage> {
       Scopus scopusData,
       Speeches speechesData,
       Trips tripsData,
-      Subjects subjectsData) async {
+      Subjects subjectsData,
+      Thesies thesiesData,
+      Projects projectsData,
+      Trainings trainingsData,
+      Awards awardsData,
+      AboutMe aboutMeData) async {
     await FirebaseFirestore.instance
         .collection("users")
         .doc(uid)
@@ -279,5 +322,10 @@ class _LoginPageState extends State<LoginPage> {
     await speechesData.fetchDataFromFirestore();
     await tripsData.fetchDataFromFirestore();
     await subjectsData.fetchDataFromFirestore();
+    await thesiesData.fetchDataFromFirestore();
+    await projectsData.fetchDataFromFirestore();
+    await trainingsData.fetchDataFromFirestore();
+    await awardsData.fetchDataFromFirestore();
+    await aboutMeData.fetchDataFromFirestore();
   }
 }

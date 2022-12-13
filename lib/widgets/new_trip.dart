@@ -1,9 +1,11 @@
-import 'dart:io';
 import 'package:academic_app/providers/trips.dart';
 import 'package:academic_app/shared/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
 import 'package:provider/provider.dart';
+import 'dart:io';
+
+import 'package:intl/intl.dart';
 
 import '../widgets/adaptive_flat_button.dart';
 
@@ -16,58 +18,68 @@ class NewTrip extends StatefulWidget {
 
 class _NewTripState extends State<NewTrip> {
   var _isLoading = false;
-  final _nameController = TextEditingController();
-  final _addressController = TextEditingController();
-  String _selectedDate;
+  final _cityController = TextEditingController();
+  final _univeristyNameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _fundNameController = TextEditingController();
+  final _relatedProjectNameController = TextEditingController();
+  String _selectedToDate;
+  String _selectedFromDate;
   final _formKey = GlobalKey<FormState>();
 
-  void _presentDatePicker() {
+  void _presentDateFromPicker() {
     showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
-      lastDate: DateTime(2023),
+      lastDate: DateTime(2025),
     ).then((pickedDate) {
       if (pickedDate == null) {
         return;
       }
       setState(() {
-        _selectedDate = DateFormat('dd/MM/yyyy').format(pickedDate).toString();
+        _selectedFromDate =
+            DateFormat('dd/MM/yyyy').format(pickedDate).toString();
       });
-      print(_selectedDate);
+    });
+  }
+
+  void _presentDateToPicker() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2025),
+    ).then((pickedDate) {
+      if (pickedDate == null) {
+        return;
+      }
+      setState(() {
+        _selectedToDate =
+            DateFormat('dd/MM/yyyy').format(pickedDate).toString();
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // TextField(
-    //           decoration: const InputDecoration(
-    //             labelText: 'Title',
-    //             labelStyle: TextStyle(
-    //               fontFamily: 'OpenSans',
-    //               fontWeight: FontWeight.w400,
-    //             ),
-    //           ),
-    //           controller: _nameController,
-    //           onSubmitted: (_) => _submitData(),
-    //         ),
     final tripsData = Provider.of<Trips>(context);
-    final titleNameField = TextFormField(
+    final cityField = TextFormField(
       autofocus: false,
-      controller: _nameController,
+      controller: _cityController,
       keyboardType: TextInputType.text,
       validator: (value) {
         if (value.isEmpty) {
-          return ("Title cannot be Empty");
+          return ("City cannot be Empty");
         }
         return null;
       },
       onSaved: (value) {
-        _nameController.text = value;
+        _cityController.text = value;
       },
       textInputAction: TextInputAction.next,
       decoration: const InputDecoration(
-        labelText: 'Title',
+        labelText: 'Miasto',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -75,9 +87,9 @@ class _NewTripState extends State<NewTrip> {
       ),
     );
 
-    final addressNameField = TextFormField(
+    final univeristyNameField = TextFormField(
       decoration: const InputDecoration(
-        labelText: 'Address',
+        labelText: 'Nazwa Uczelni',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -85,17 +97,128 @@ class _NewTripState extends State<NewTrip> {
       ),
       textInputAction: TextInputAction.next,
       autofocus: false,
-      controller: _addressController,
+      controller: _univeristyNameController,
       keyboardType: TextInputType.text,
       onSaved: (value) {
-        _addressController.text = value;
+        _univeristyNameController.text = value;
       },
       validator: (value) {
         if (value.isEmpty) {
-          return ("Address cannot be Empty");
+          return ("Nazwa uczelni nie może być pusta");
         }
         return null;
       },
+    );
+
+    final descriptionField = TextFormField(
+      decoration: const InputDecoration(
+        labelText: 'Opis',
+        labelStyle: TextStyle(
+          fontFamily: 'OpenSans',
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      textInputAction: TextInputAction.next,
+      autofocus: false,
+      controller: _descriptionController,
+      keyboardType: TextInputType.text,
+      onSaved: (value) {
+        _descriptionController.text = value;
+      },
+      validator: (value) {
+        if (value.isEmpty) {
+          return ("Opis nie może być pusty");
+        }
+        return null;
+      },
+    );
+
+    final relatedProjectNameField = TextFormField(
+      decoration: const InputDecoration(
+        labelText: 'Powiązany projekt',
+        labelStyle: TextStyle(
+          fontFamily: 'OpenSans',
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      textInputAction: TextInputAction.next,
+      autofocus: false,
+      controller: _relatedProjectNameController,
+      keyboardType: TextInputType.text,
+      onSaved: (value) {
+        _relatedProjectNameController.text = value;
+      },
+      validator: (value) {
+        if (value.isEmpty) {
+          return ("Powiązany projekt nie może być pusty");
+        }
+        return null;
+      },
+    );
+
+    final fundNameField = TextFormField(
+      decoration: const InputDecoration(
+        labelText: 'Finansowanie',
+        labelStyle: TextStyle(
+          fontFamily: 'OpenSans',
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      textInputAction: TextInputAction.next,
+      autofocus: false,
+      controller: _fundNameController,
+      keyboardType: TextInputType.text,
+      onSaved: (value) {
+        _fundNameController.text = value;
+      },
+      validator: (value) {
+        if (value.isEmpty) {
+          return ("Finansowanie nie może być puste");
+        }
+        return null;
+      },
+    );
+
+    final dateFromPicker = Container(
+      margin: EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              _selectedFromDate == null
+                  ? 'Nie wybrano daty rozpoczęcia'
+                  : 'Data rozpoczęcia: ${_selectedFromDate}',
+              style: const TextStyle(
+                fontFamily: 'OpenSans',
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          AdaptiveFlatButton('Wybierz date', _presentDateFromPicker)
+        ],
+      ),
+    );
+
+    final dateToPicker = Container(
+      margin: EdgeInsets.symmetric(
+        vertical: 2,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              _selectedFromDate == null
+                  ? 'Nie wybrano daty zakończenia'
+                  : 'Data rozpoczęcia: ${_selectedToDate}',
+              style: const TextStyle(
+                fontFamily: 'OpenSans',
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          AdaptiveFlatButton('Wybierz date', _presentDateToPicker)
+        ],
+      ),
     );
 
     return SingleChildScrollView(
@@ -113,33 +236,18 @@ class _NewTripState extends State<NewTrip> {
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      titleNameField,
-                      addressNameField,
-                      Container(
-                        height: 70,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _selectedDate == null
-                                    ? 'Nie wybrano daty'
-                                    : 'Data: ${_selectedDate}',
-                                style: const TextStyle(
-                                  fontFamily: 'OpenSans',
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                            AdaptiveFlatButton(
-                                'Wybierz date', _presentDatePicker)
-                          ],
-                        ),
-                      ),
+                      cityField,
+                      univeristyNameField,
+                      dateFromPicker,
+                      dateToPicker,
+                      descriptionField,
+                      fundNameField,
+                      relatedProjectNameField,
                       ElevatedButton(
                         child: Text(
-                          'Dodaj Wyjazd',
+                          'Dodaj Wyjazd/Staż',
                           style: TextStyle(
                               color: Constants.primaryTextColor,
                               fontFamily: 'OpenSans',
@@ -155,9 +263,15 @@ class _NewTripState extends State<NewTrip> {
                                 _isLoading = true;
                               });
                               tripsData.addTrip(
-                                  address: _addressController.text,
-                                  date: _selectedDate,
-                                  title: _nameController.text);
+                                city: _cityController.text,
+                                dateFrom: _selectedFromDate,
+                                dateTo: _selectedToDate,
+                                description: _descriptionController.text,
+                                fundName: _fundNameController.text,
+                                relatedProjectName:
+                                    _relatedProjectNameController.text,
+                                univeristyName: _univeristyNameController.text,
+                              );
                               setState(() {
                                 _isLoading = false;
                               });

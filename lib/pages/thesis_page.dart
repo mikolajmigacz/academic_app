@@ -1,27 +1,26 @@
-import 'package:academic_app/providers/subjects.dart';
+import 'package:academic_app/providers/thesis.dart';
 import 'package:academic_app/shared/constants.dart';
 import 'package:academic_app/widgets/app_drawer.dart';
+import 'package:academic_app/widgets/new_thiese.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../widgets/new_subject.dart';
-
-class SubjectsPage extends StatefulWidget {
-  static String routeName = '/subjects';
+class ThesiesPage extends StatefulWidget {
+  static String routeName = '/thesies';
 
   @override
-  State<SubjectsPage> createState() => _SubjectsPageState();
+  State<ThesiesPage> createState() => _ThesiesPageState();
 }
 
-class _SubjectsPageState extends State<SubjectsPage> {
+class _ThesiesPageState extends State<ThesiesPage> {
   bool _isLoading = false;
 
-  bool _showLectures = true;
-  bool _showLabs = true;
+  bool _showInz = true;
+  bool _showMgr = true;
 
   @override
   Widget build(BuildContext context) {
-    final subjectsData = Provider.of<Subjects>(context);
+    final thesiesData = Provider.of<Thesies>(context);
     final heightOfPage = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
@@ -31,7 +30,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
           ),
         ),
         title: Text(
-          'Dydaktyka',
+          'Opieka nad pracami',
           style: TextStyle(color: Constants.primaryTextColor),
         ),
         centerTitle: true,
@@ -45,7 +44,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
                     builder: (_) {
                       return GestureDetector(
                         onTap: () {},
-                        child: NewSubject(),
+                        child: NewThiese(),
                         behavior: HitTestBehavior.opaque,
                       );
                     },
@@ -62,7 +61,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
       drawer: AppDrawer(),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : subjectsData.subjects.length == 0
+          : thesiesData.thesies.length == 0
               ? Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Center(
@@ -118,14 +117,14 @@ class _SubjectsPageState extends State<SubjectsPage> {
                                 children: [
                                   Checkbox(
                                       activeColor: Constants.primaryColor,
-                                      value: _showLabs,
+                                      value: _showInz,
                                       onChanged: (bool value) {
                                         setState(() {
-                                          _showLabs = value;
+                                          _showInz = value;
                                         });
                                       }),
                                   Text(
-                                    "Laboratoria",
+                                    "Inżynierskie",
                                     style: TextStyle(
                                         color: Constants.primaryColor,
                                         fontFamily: 'OpenSans',
@@ -135,20 +134,20 @@ class _SubjectsPageState extends State<SubjectsPage> {
                                 ],
                               ),
                               SizedBox(
-                                width: 40,
+                                width: 70,
                               ),
                               Column(
                                 children: [
                                   Checkbox(
                                       activeColor: Constants.primaryColor,
-                                      value: _showLectures,
+                                      value: _showMgr,
                                       onChanged: (bool value) {
                                         setState(() {
-                                          _showLectures = value;
+                                          _showMgr = value;
                                         });
                                       }),
                                   Text(
-                                    "Wykłady",
+                                    "Magisterskie",
                                     style: TextStyle(
                                         color: Constants.primaryColor,
                                         fontFamily: 'OpenSans',
@@ -171,7 +170,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
                                   5.0,
                                 ))),
                             child: Text(
-                              'Suma przedmiotów: ${subjectsData.subjects.length}',
+                              'Suma Prowadzonych prac: ${thesiesData.thesies.length}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -186,7 +185,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
                           Container(
                             height: (heightOfPage * 0.80),
                             width: MediaQuery.of(context).size.width,
-                            child: mainGrid(subjectsData),
+                            child: mainList(thesiesData),
                           ),
                         ],
                       ),
@@ -203,7 +202,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
             builder: (_) {
               return GestureDetector(
                 onTap: () {},
-                child: NewSubject(),
+                child: NewThiese(),
                 behavior: HitTestBehavior.opaque,
               );
             },
@@ -214,32 +213,32 @@ class _SubjectsPageState extends State<SubjectsPage> {
     );
   }
 
-  Widget mainGrid(Subjects subjectsData) {
-    List<Subject> subjects = subjectsData.subjects
-        .where((element) => (element.isLecture == _showLectures &&
-            element.isLabolatories == _showLabs))
-        .toList();
-    return GridView.builder(
+  Widget mainList(Thesies thesiesData) {
+    List<Thesis> thesies = (_showInz && _showMgr)
+        ? thesiesData.thesies
+        : thesiesData.thesies
+            .where((element) =>
+                (element.isInz == _showInz && element.isMgr == _showMgr))
+            .toList();
+    return ListView.builder(
       itemBuilder: (context, index) {
-        return SubjectItem(
-            subjects[index].code,
-            subjects[index].name,
-            subjects[index].semesterNumber,
-            subjects[index].isLecture,
-            subjects[index].isLabolatories,
-            subjects[index].hours,
-            subjectsData.removeSubject);
+        return ThesiesItem(
+            thesies[index].nameAndSurname,
+            thesies[index].indexNumber,
+            thesies[index].recenzentName,
+            thesies[index].promotorName,
+            thesies[index].titleInPolish,
+            thesies[index].titleInEnglish,
+            thesies[index].yearOfDefense,
+            thesies[index].isInz,
+            thesies[index].isMgr,
+            thesiesData.removeThiese);
       },
-      itemCount: subjects.length,
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 250,
-        crossAxisSpacing: 2,
-        mainAxisSpacing: 2,
-      ),
+      itemCount: thesies.length,
     );
   }
 
-  Widget SubjectItemRow(IconData icon, String text) {
+  Widget thesiesItemRow(IconData icon, String text) {
     return Row(
       children: [
         Icon(
@@ -252,6 +251,8 @@ class _SubjectsPageState extends State<SubjectsPage> {
         Expanded(
           child: Text(
             text,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.normal,
@@ -263,97 +264,129 @@ class _SubjectsPageState extends State<SubjectsPage> {
     );
   }
 
-  Widget SubjectItem(
-      String code,
-      String name,
-      String semesterNumber,
-      bool isLecture,
-      bool isLabolatories,
-      String hours,
-      Future<void> Function(String) deleteFunc) {
-    final isLectureRow = Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+  Widget ThesiesItem(
+      String nameAndSurname,
+      String indexNumber,
+      String recenzentName,
+      String promotorName,
+      String titleInPolish,
+      String titleInEnglish,
+      String yearOfDefense,
+      bool isInz,
+      bool isMgr,
+      Future<void> Function(String, String) deleteFunc) {
+    final promotorRow = Row(
       children: [
-        const Text(
-          "Wykłady",
+        Text(
+          "P",
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.normal,
-            color: Constants.primaryTextColor,
-          ),
+              color: Constants.primaryTextColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 15),
         ),
         SizedBox(
           width: 10,
         ),
-        Icon(
-          isLecture ? Icons.check_circle : Icons.cancel,
-          color: Constants.primaryTextColor,
+        Expanded(
+          child: Text(
+            promotorName,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.normal,
+              color: Constants.primaryTextColor,
+            ),
+          ),
         ),
       ],
     );
 
-    final isLabRow = Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+    final recenzentRow = Row(
       children: [
-        const Text(
-          "Laboratoria",
+        Text(
+          "R",
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.normal,
-            color: Constants.primaryTextColor,
-          ),
+              color: Constants.primaryTextColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 15),
         ),
         SizedBox(
           width: 10,
         ),
-        Icon(
-          isLabolatories ? Icons.check_circle : Icons.cancel,
-          color: Constants.primaryTextColor,
+        Expanded(
+          child: Text(
+            recenzentName,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.normal,
+              color: Constants.primaryTextColor,
+            ),
+          ),
         ),
       ],
     );
+
     return Column(
       children: [
-        Flexible(
-          child: Card(
-            elevation: 5,
-            child: Container(
-              margin: EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-              padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Constants.primaryColor.withOpacity(0.6),
-                      Constants.primaryColor,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+        Card(
+          elevation: 5,
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+            padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+            decoration: BoxDecoration(
+                color: Constants.primaryColor,
+                borderRadius: BorderRadius.all(Radius.circular(5.0))),
+            child: Column(
+              children: [
+                Text(
+                  titleInPolish,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.normal,
+                    color: Constants.primaryTextColor,
                   ),
-                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Constants.primaryTextColor,
-                      ),
-                    ),
-                    SizedBox(height: 1),
-                    SubjectItemRow(Icons.vpn_key, code),
-                    SizedBox(height: 1),
-                    SubjectItemRow(Icons.pin, semesterNumber),
-                    SizedBox(height: 1),
-                    SubjectItemRow(Icons.hourglass_empty, hours),
-                    SizedBox(height: 1),
-                    isLectureRow,
-                    SizedBox(height: 1),
-                    isLabRow,
-                  ],
                 ),
-              ),
+                SizedBox(
+                  height: 1,
+                ),
+                Text(
+                  isInz ? "Inżynierska" : "Magisterska",
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.normal,
+                    color: Constants.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(
+                  height: 4,
+                ),
+                thesiesItemRow(Icons.person, nameAndSurname),
+                const SizedBox(
+                  height: 1,
+                ),
+                thesiesItemRow(Icons.numbers, indexNumber),
+                const SizedBox(
+                  height: 1,
+                ),
+                Container(
+                    margin: EdgeInsets.only(right: 2), child: promotorRow),
+                const SizedBox(
+                  height: 1,
+                ),
+                Container(
+                    margin: EdgeInsets.only(right: 2), child: recenzentRow),
+                const SizedBox(
+                  height: 1,
+                ),
+                thesiesItemRow(Icons.public, titleInEnglish),
+                const SizedBox(
+                  height: 1,
+                ),
+                thesiesItemRow(Icons.calendar_month, yearOfDefense),
+              ],
             ),
           ),
         ),
@@ -362,7 +395,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
               setState(() {
                 _isLoading = true;
               });
-              await deleteFunc(code);
+              await deleteFunc(indexNumber, titleInPolish);
               setState(() {
                 _isLoading = false;
               });

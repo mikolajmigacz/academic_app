@@ -1,11 +1,13 @@
-import 'package:academic_app/providers/scopus.dart';
-import 'package:academic_app/shared/constants.dart';
+import 'package:academic_app/pages/projects_page.dart';
+import 'package:academic_app/pages/publications_page.dart';
+import 'package:academic_app/providers/thesis.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/categories.dart';
+import '../shared/constants.dart';
+import '../providers/subjects.dart';
+import '../providers/scopus.dart';
 import '../providers/user_data.dart';
-import '../widgets/category_item.dart';
 import '../widgets/app_drawer.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,8 +18,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    final userData = Provider.of<UserData>(context);
-    final scopusData = Provider.of<Scopus>(context);
+    var userData = Provider.of<UserData>(context);
+    var scopusData = Provider.of<Scopus>(context);
+    var subjectData = Provider.of<Subjects>(context);
+    var thesisData = Provider.of<Thesies>(context);
     return Scaffold(
       appBar: AppBar(
         shape: const RoundedRectangleBorder(
@@ -37,13 +41,14 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
       ),
       body: Container(
-        margin: EdgeInsets.all(30),
+        margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Icon(
-                Icons.account_circle,
-                size: 80,
+              Image.asset(
+                "assets/images/profile.png",
+                width: 150,
+                height: 150,
               ),
               SizedBox(
                 height: 10,
@@ -61,6 +66,7 @@ class _HomePageState extends State<HomePage> {
               SizedBox(
                 height: 20,
               ),
+              Divider(),
               Text(
                 'Statystyki',
                 style: TextStyle(
@@ -68,6 +74,7 @@ class _HomePageState extends State<HomePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               SizedBox(
                 height: 15,
               ),
@@ -101,9 +108,45 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
+
+              ((subjectData.subjects.length == 0 ||
+                          subjectData.subjects.length == null) &&
+                      (subjectData.subjects.length == 0 ||
+                          scopusData.createdDocuments.length == null))
+                  ? SizedBox.shrink()
+                  : Container(
+                      margin: EdgeInsets.symmetric(vertical: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          //start Documents created Statistics widget
+                          CircleColorWidget(
+                            color: Colors.blue,
+                            number: (subjectData.subjects.length == 0 ||
+                                    subjectData.subjects.length == null)
+                                ? 0
+                                : subjectData.subjects.length,
+                            // number: 25,
+                            text: 'Przedmioty',
+                            icon: Icons.work_outline,
+                          ),
+                          CircleColorWidget(
+                            color: Colors.teal,
+                            number: (subjectData.subjects.length == 0 ||
+                                    scopusData.createdDocuments.length == null)
+                                ? 0
+                                : thesisData.thesies.length,
+                            // number: 98,
+                            text: 'Opieka nad pracami',
+                            icon: Icons.supervisor_account_outlined,
+                          ),
+                        ],
+                      ),
+                    ),
               SizedBox(
                 height: 20,
               ),
+              Divider(),
               Text(
                 'Ostatnie Artykuły',
                 style: TextStyle(
@@ -116,27 +159,40 @@ class _HomePageState extends State<HomePage> {
               ),
               Container(
                 height: 180,
-                child: ListView.builder(
-                  itemBuilder: (context, index) => ArticleItem(
-                    author:
-                        // 'Jeden i ten sam',
-                        scopusData.createdDocuments[index]['creator'],
-                    citations:
-                        // '69',
-                        scopusData.createdDocuments[index]['citedByCount'],
-                    title:
-                        // 'Taki sam jak zawsze jest',
-                        scopusData.createdDocuments[index]['title'],
-                  ),
-                  itemCount:
-                      // 5,
-                      scopusData.createdDocuments?.length == 0 ||
-                              scopusData.createdDocuments?.length == null
-                          ? 0
-                          : scopusData.createdDocuments?.length < 5
-                              ? scopusData.createdDocuments?.length
-                              : 5,
-                  scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemBuilder: (context, index) => ArticleItem(
+                          author:
+                              // 'Jeden i ten sam',
+                              scopusData.createdDocuments[index]['creator'],
+                          citations:
+                              // '69',
+                              scopusData.createdDocuments[index]
+                                  ['citedByCount'],
+                          title:
+                              // 'Taki sam jak zawsze jest',
+                              scopusData.createdDocuments[index]['title'],
+                        ),
+                        itemCount:
+                            // 5,
+                            scopusData.createdDocuments?.length == 0 ||
+                                    scopusData.createdDocuments?.length == null
+                                ? 0
+                                : scopusData.createdDocuments?.length < 5
+                                    ? scopusData.createdDocuments?.length
+                                    : 5,
+                        scrollDirection: Axis.horizontal,
+                      ),
+                    ),
+                    IconButton(
+                        icon: Icon(Icons.forward),
+                        onPressed: () => {
+                              Navigator.of(context).pushReplacementNamed(
+                                  PublicationsPage.routeName)
+                            })
+                  ],
                 ),
               ),
             ],
@@ -244,7 +300,7 @@ class ArticleItem extends StatelessWidget {
 
 class CircleColorWidget extends StatelessWidget {
   final Color color;
-  final int number;
+  int number;
   final String text;
   final IconData icon;
 

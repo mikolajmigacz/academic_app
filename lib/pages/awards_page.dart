@@ -1,25 +1,25 @@
 import 'package:academic_app/shared/constants.dart';
 import 'package:academic_app/widgets/app_drawer.dart';
+import 'package:academic_app/widgets/new_award.dart';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/trips.dart';
-import '../widgets/new_trip.dart';
+import '../providers/awards.dart';
 
-class TripsPage extends StatefulWidget {
-  static String routeName = '/trips';
+class AwardsPage extends StatefulWidget {
+  static String routeName = '/awards';
 
   @override
-  State<TripsPage> createState() => _TripsPageState();
+  State<AwardsPage> createState() => _AwardsPageState();
 }
 
-class _TripsPageState extends State<TripsPage> {
+class _AwardsPageState extends State<AwardsPage> {
   bool _isLoading = false;
   @override
   Widget build(BuildContext context) {
     final heightOfPage = MediaQuery.of(context).size.height;
-    final tripsData = Provider.of<Trips>(context);
+    final awardsData = Provider.of<Awards>(context);
     return Scaffold(
       appBar: AppBar(
         shape: const RoundedRectangleBorder(
@@ -28,7 +28,7 @@ class _TripsPageState extends State<TripsPage> {
           ),
         ),
         title: Text(
-          'Wyjazdy/Staże',
+          'Wyróżnienia i nagrody',
           style: TextStyle(color: Constants.primaryTextColor),
         ),
         centerTitle: true,
@@ -42,7 +42,7 @@ class _TripsPageState extends State<TripsPage> {
                     builder: (_) {
                       return GestureDetector(
                         onTap: () {},
-                        child: NewTrip(),
+                        child: NewAward(),
                         behavior: HitTestBehavior.opaque,
                       );
                     },
@@ -59,7 +59,7 @@ class _TripsPageState extends State<TripsPage> {
       drawer: AppDrawer(),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : tripsData.trips.length == 0
+          : awardsData.awards.length == 0
               ? Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Center(
@@ -71,28 +71,28 @@ class _TripsPageState extends State<TripsPage> {
                           height: 150,
                         ),
                         const Text(
-                          'Zaplanuj',
+                          'Dodaj',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Text(
-                          'swój',
+                          'swoją',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Text(
-                          'pierwszy',
+                          'pierwszą',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Text(
-                          'wyjazd/staż',
+                          'nagrodę',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -108,29 +108,24 @@ class _TripsPageState extends State<TripsPage> {
                       padding: const EdgeInsets.all(5),
                       child: Column(
                         children: [
-                          Text('Liczba wyjazdów: ${tripsData.trips.length}'),
+                          Text('Liczba nagród: ${awardsData.awards.length}'),
                           Container(
                             height: (heightOfPage * 0.85),
                             width: MediaQuery.of(context).size.width,
                             child: GridView.builder(
                               itemBuilder: (context, index) {
-                                return TripItem(
-                                    tripsData.trips[index].city,
-                                    tripsData.trips[index].univeristyName,
-                                    tripsData.trips[index].dateFrom,
-                                    tripsData.trips[index].description,
-                                    tripsData.trips[index].dateTo,
-                                    tripsData.trips[index].fundName,
-                                    tripsData.trips[index].relatedProjectName,
-                                    tripsData.removeTrip);
+                                return AwardItem(
+                                    awardsData.awards[index].name,
+                                    awardsData.awards[index].date,
+                                    awardsData.awards[index].place,
+                                    awardsData.removeAward);
                               },
-                              itemCount: tripsData.trips.length,
+                              itemCount: awardsData.awards.length,
                               gridDelegate:
                                   SliverGridDelegateWithMaxCrossAxisExtent(
                                 maxCrossAxisExtent: 250,
-                                // childAspectRatio: (1 / 2),
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 30,
+                                crossAxisSpacing: 2,
+                                mainAxisSpacing: 2,
                               ),
                             ),
                           ),
@@ -149,7 +144,7 @@ class _TripsPageState extends State<TripsPage> {
             builder: (_) {
               return GestureDetector(
                 onTap: () {},
-                child: NewTrip(),
+                child: NewAward(),
                 behavior: HitTestBehavior.opaque,
               );
             },
@@ -160,7 +155,7 @@ class _TripsPageState extends State<TripsPage> {
     );
   }
 
-  Widget TripRowItem(IconData icon, String text) {
+  Widget AwardItemRow(IconData icon, String text) {
     return Row(
       children: [
         Icon(
@@ -184,14 +179,7 @@ class _TripsPageState extends State<TripsPage> {
     );
   }
 
-  Widget TripItem(
-      String city,
-      String univeristyName,
-      String dateFrom,
-      String description,
-      String dateTo,
-      String fundName,
-      String relatedProjectName,
+  Widget AwardItem(String name, String date, String place,
       Future<void> Function(String) deleteFunc) {
     return Column(
       children: [
@@ -215,22 +203,15 @@ class _TripsPageState extends State<TripsPage> {
                 child: Column(
                   children: [
                     Icon(
-                      Icons.explore,
+                      Icons.stars,
                       color: Constants.primaryTextColor,
                     ),
                     SizedBox(height: 1),
-                    TripRowItem(Icons.location_city, city),
+                    AwardItemRow(Icons.title, name),
                     SizedBox(height: 1),
-                    TripRowItem(Icons.school, univeristyName),
+                    AwardItemRow(Icons.calendar_month, date),
                     SizedBox(height: 1),
-                    TripRowItem(
-                        Icons.calendar_month, "${dateFrom} - ${dateTo}"),
-                    SizedBox(height: 1),
-                    TripRowItem(Icons.note_alt, description),
-                    SizedBox(height: 1),
-                    TripRowItem(Icons.payments, fundName),
-                    SizedBox(height: 1),
-                    TripRowItem(Icons.description, relatedProjectName),
+                    AwardItemRow(Icons.pin_drop, place),
                   ],
                 ),
               ),
@@ -242,7 +223,7 @@ class _TripsPageState extends State<TripsPage> {
               setState(() {
                 _isLoading = true;
               });
-              await deleteFunc(description);
+              await deleteFunc(name);
               setState(() {
                 _isLoading = false;
               });

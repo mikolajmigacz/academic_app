@@ -1,18 +1,25 @@
+import 'package:academic_app/providers/projects.dart';
 import 'package:academic_app/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../shared/constants.dart';
-import '../providers/scopus.dart';
+import '../widgets/new_project.dart';
 
-class ProjectsPage extends StatelessWidget {
+class ProjectsPage extends StatefulWidget {
   static const routeName = '/projects';
 
   @override
+  State<ProjectsPage> createState() => _ProjectsPageState();
+}
+
+class _ProjectsPageState extends State<ProjectsPage> {
+  @override
   Widget build(BuildContext context) {
+    bool _isLoading = false;
     final heightOfPage = MediaQuery.of(context).size.height;
-    final scopusData = Provider.of<Scopus>(context);
+    final projectsData = Provider.of<Projects>(context);
     return Scaffold(
       drawer: AppDrawer(),
       appBar: AppBar(
@@ -26,47 +33,106 @@ class ProjectsPage extends StatelessWidget {
           style: TextStyle(color: Constants.primaryTextColor),
         ),
         centerTitle: true,
-      ),
-      body: Column(
-        children: [
+        actions: [
           Container(
-            padding: const EdgeInsets.all(5),
-            child: Column(
-              children: [
-                Text('Total documents: ${scopusData.createdDocuments.length}'),
-                Container(
-                  height: (heightOfPage * 0.9),
-                  width: MediaQuery.of(context).size.width,
-                  child: ListView.builder(
-                    itemBuilder: (context, index) {
-                      return ProjectItem(
-                          scopusData.createdDocuments[index]['title'],
-                          scopusData.createdDocuments[index]['publicationName'],
-                          scopusData.createdDocuments[index]['creator'],
-                          scopusData.createdDocuments[index]['dateOfCreation'],
-                          scopusData.createdDocuments[index]['citedByCount'],
-                          scopusData.createdDocuments[index]['link']);
-                      // 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
-                      // 'Product Name',
-                      // 'Author',
-                      // 'March 2022',
-                      // '2',
-                      // 'https://stackoverflow.com/questions/43583411/how-to-create-a-hyperlink-in-flutter-widget',
-                      // );
+            margin: EdgeInsets.only(right: 8),
+            child: IconButton(
+                onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (_) {
+                      return GestureDetector(
+                        onTap: () {},
+                        child: Center(child: NewPublication()),
+                        behavior: HitTestBehavior.opaque,
+                      );
                     },
-                    itemCount: scopusData.createdDocuments.length,
-                    // 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
+                  );
+                  setState(() {});
+                },
+                icon: Icon(
+                  Icons.add,
+                  color: Colors.white,
+                )),
+          )
         ],
       ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : projectsData.projects.length == 0
+              ? Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          "assets/images/no_items.png",
+                          width: 100,
+                          height: 150,
+                        ),
+                        const Text(
+                          'Dodaj',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Text(
+                          'pierwszy',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Text(
+                          'projekt',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      child: Column(
+                        children: [
+                          Text(
+                              'Liczba projektów: ${projectsData.projects.length}'),
+                          Container(
+                            height: (heightOfPage * 0.85),
+                            width: MediaQuery.of(context).size.width,
+                            child: ListView.builder(
+                              itemBuilder: (context, index) {
+                                return PublicationItem(
+                                    projectsData.projects[index].title,
+                                    projectsData.projects[index].foundSource,
+                                    projectsData.projects[index].dateFrom,
+                                    projectsData.projects[index].dateTo,
+                                    projectsData
+                                        .projects[index].competitionName,
+                                    projectsData.projects[index].roleName,
+                                    projectsData.projects[index].coAuthors,
+                                    projectsData
+                                        .projects[index].isInternational);
+                              },
+                              itemCount: projectsData.projects.length,
+                              // 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
     );
   }
 
-  Widget projectItemRow(IconData icon, String text) {
+  Widget publicationItemRow(IconData icon, String text) {
     return Row(
       children: [
         Icon(
@@ -74,7 +140,7 @@ class ProjectsPage extends StatelessWidget {
           color: Constants.primaryTextColor,
         ),
         SizedBox(
-          width: 3,
+          width: 10,
         ),
         Expanded(
           child: Text(
@@ -92,40 +158,25 @@ class ProjectsPage extends StatelessWidget {
     );
   }
 
-  Widget ProjectItem(String title, String publicationName, String author,
-      String date, String citedCount, String url) {
-    final linkRow = Row(
-      children: [
-        Icon(
-          Icons.language,
-          color: Constants.primaryTextColor,
-        ),
-        SizedBox(
-          width: 3,
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: const BoxDecoration(
-              shape: BoxShape.rectangle,
-              color: Constants.primaryTextColor,
-              borderRadius: BorderRadius.all(Radius.circular(
-                5.0,
-              ))),
-          child: GestureDetector(
-            child: Text(
-              'See in Scopus',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                  color: Constants.primaryColor),
-            ),
-            onTap: (() => launchUrl(Uri.parse(url))),
-          ),
-        ),
-      ],
-    );
+  Widget PublicationItem(
+    String title,
+    String fundSource,
+    String dateFrom,
+    String dateTo,
+    String competitionName,
+    String myRole,
+    List<Map<String, String>> coAuthors,
+    bool isInternational,
+  ) {
+    String coAuthorsString = "";
+    for (var i = 0; i < coAuthors.length; i++) {
+      if (i == coAuthors.length - 1) {
+        coAuthorsString += "${coAuthors[i]["name"]}(${coAuthors[i]["role"]})";
+      } else {
+        coAuthorsString += "${coAuthors[i]["name"]}(${coAuthors[i]["role"]}), ";
+      }
+    }
+
     return Card(
       elevation: 5,
       child: Container(
@@ -136,27 +187,38 @@ class ProjectsPage extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(5.0))),
         child: Column(
           children: [
-            projectItemRow(Icons.article, title),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.normal,
+                color: Constants.primaryTextColor,
+              ),
+            ),
+            const SizedBox(
+              height: 4,
+            ),
+            publicationItemRow(Icons.payments, fundSource),
             const SizedBox(
               height: 1,
             ),
-            projectItemRow(Icons.drive_file_rename_outline, publicationName),
+            publicationItemRow(Icons.calendar_month, "${dateFrom} - ${dateTo}"),
             const SizedBox(
               height: 1,
             ),
-            projectItemRow(Icons.person, author),
+            publicationItemRow(Icons.info, competitionName),
             const SizedBox(
               height: 1,
             ),
-            projectItemRow(Icons.date_range, date),
+            publicationItemRow(Icons.person, myRole),
             const SizedBox(
               height: 1,
             ),
-            projectItemRow(Icons.pin, citedCount),
+            publicationItemRow(Icons.public, isInternational ? "Tak" : "Nie"),
             const SizedBox(
               height: 1,
             ),
-            linkRow
+            publicationItemRow(Icons.group, coAuthorsString),
           ],
         ),
       ),

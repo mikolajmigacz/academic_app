@@ -1,46 +1,50 @@
+import 'package:academic_app/providers/thesis.dart';
 import 'package:academic_app/shared/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/subjects.dart';
 import '../widgets/adaptive_flat_button.dart';
 
-class NewSubject extends StatefulWidget {
-  NewSubject();
+class NewThiese extends StatefulWidget {
+  NewThiese();
 
   @override
-  _NewSubjectState createState() => _NewSubjectState();
+  _NewThieseState createState() => _NewThieseState();
 }
 
-class _NewSubjectState extends State<NewSubject> {
+class _NewThieseState extends State<NewThiese> {
   var _isLoading = false;
-  final _nameController = TextEditingController();
-  final _codeController = TextEditingController();
-  final _semesterNumberController = TextEditingController();
-  final _hoursController = TextEditingController();
-  bool _isLecture = false;
-  bool _isLabolatories = false;
+  final _nameAndSurnameController = TextEditingController();
+  final _recenzentNameController = TextEditingController();
+  final _indexNumberController = TextEditingController();
+  final _promotorNameController = TextEditingController();
+  final _titleInPolishController = TextEditingController();
+  final _titleInEnglishController = TextEditingController();
+  final _yearOfDefenseController = TextEditingController();
+  bool _isInz = false;
+  bool _isMgr = false;
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    final subjectData = Provider.of<Subjects>(context);
-    final titleNameField = TextFormField(
+    final thesiesData = Provider.of<Thesies>(context);
+
+    final defenseYearField = TextFormField(
       autofocus: false,
-      controller: _nameController,
+      controller: _yearOfDefenseController,
       keyboardType: TextInputType.text,
       validator: (value) {
         if (value.isEmpty) {
-          return ("Subject name cannot be Empty");
+          return ("Rok obrony cannot be Empty");
         }
         return null;
       },
       onSaved: (value) {
-        _nameController.text = value;
+        _yearOfDefenseController.text = value;
       },
       textInputAction: TextInputAction.next,
       decoration: const InputDecoration(
-        labelText: 'Nazwa Przedmiotu',
+        labelText: 'Rok obrony',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -48,22 +52,22 @@ class _NewSubjectState extends State<NewSubject> {
       ),
     );
 
-    final codeField = TextFormField(
+    final titleInEnglishField = TextFormField(
       autofocus: false,
-      controller: _codeController,
+      controller: _titleInEnglishController,
       keyboardType: TextInputType.text,
       validator: (value) {
         if (value.isEmpty) {
-          return ("Code cannot be Empty");
+          return ("Tytuł cannot be Empty");
         }
         return null;
       },
       onSaved: (value) {
-        _codeController.text = value;
+        _titleInEnglishController.text = value;
       },
       textInputAction: TextInputAction.next,
       decoration: const InputDecoration(
-        labelText: 'Kod Przedmiotu',
+        labelText: 'Tytuł (Angielski)',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -71,22 +75,22 @@ class _NewSubjectState extends State<NewSubject> {
       ),
     );
 
-    final semesterNumberField = TextFormField(
+    final titleInPolishField = TextFormField(
       autofocus: false,
-      controller: _semesterNumberController,
+      controller: _titleInPolishController,
       keyboardType: TextInputType.text,
       validator: (value) {
         if (value.isEmpty) {
-          return ("Semester number cannot be Empty");
+          return ("Tytuł cannot be Empty");
         }
         return null;
       },
       onSaved: (value) {
-        _semesterNumberController.text = value;
+        _titleInPolishController.text = value;
       },
       textInputAction: TextInputAction.next,
       decoration: const InputDecoration(
-        labelText: 'Numer Semestru',
+        labelText: 'Tytuł (Polski)',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -94,22 +98,22 @@ class _NewSubjectState extends State<NewSubject> {
       ),
     );
 
-    final hoursField = TextFormField(
+    final nameAndSurnameField = TextFormField(
       autofocus: false,
-      controller: _hoursController,
+      controller: _nameAndSurnameController,
       keyboardType: TextInputType.text,
       validator: (value) {
         if (value.isEmpty) {
-          return ("Hours cannot be Empty");
+          return ("Imie i nazwisko cannot be Empty");
         }
         return null;
       },
       onSaved: (value) {
-        _hoursController.text = value;
+        _nameAndSurnameController.text = value;
       },
       textInputAction: TextInputAction.next,
       decoration: const InputDecoration(
-        labelText: 'Ilość godzin',
+        labelText: 'Imie i Nazwisko',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -117,14 +121,83 @@ class _NewSubjectState extends State<NewSubject> {
       ),
     );
 
-    final isLectureField = Container(
+    final recenzentField = TextFormField(
+      autofocus: false,
+      controller: _recenzentNameController,
+      keyboardType: TextInputType.text,
+      validator: (value) {
+        if (value.isEmpty) {
+          return ("Recenzent cannot be Empty");
+        }
+        return null;
+      },
+      onSaved: (value) {
+        _recenzentNameController.text = value;
+      },
+      textInputAction: TextInputAction.next,
+      decoration: const InputDecoration(
+        labelText: 'Recenzent',
+        labelStyle: TextStyle(
+          fontFamily: 'OpenSans',
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    );
+
+    final indeksNumberField = TextFormField(
+      autofocus: false,
+      controller: _indexNumberController,
+      keyboardType: TextInputType.text,
+      validator: (value) {
+        if (value.isEmpty) {
+          return ("Indeks number cannot be Empty");
+        }
+        return null;
+      },
+      onSaved: (value) {
+        _indexNumberController.text = value;
+      },
+      textInputAction: TextInputAction.next,
+      decoration: const InputDecoration(
+        labelText: 'Numer Indeksu',
+        labelStyle: TextStyle(
+          fontFamily: 'OpenSans',
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    );
+
+    final promotorField = TextFormField(
+      autofocus: false,
+      controller: _promotorNameController,
+      keyboardType: TextInputType.text,
+      validator: (value) {
+        if (value.isEmpty) {
+          return ("Promotor cannot be Empty");
+        }
+        return null;
+      },
+      onSaved: (value) {
+        _promotorNameController.text = value;
+      },
+      textInputAction: TextInputAction.next,
+      decoration: const InputDecoration(
+        labelText: 'Promotor',
+        labelStyle: TextStyle(
+          fontFamily: 'OpenSans',
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    );
+
+    final isMgrField = Container(
       margin: EdgeInsets.only(bottom: 5.0),
       child: Row(
         children: [
           Container(
             width: 100,
             child: const Text(
-              'Wykłady',
+              'Magisterska',
               style: TextStyle(
                   color: Constants.primaryColor,
                   fontFamily: 'OpenSans',
@@ -136,22 +209,22 @@ class _NewSubjectState extends State<NewSubject> {
           ),
           Checkbox(
               activeColor: Constants.primaryColor,
-              value: _isLecture,
+              value: _isMgr,
               onChanged: (bool value) {
                 setState(() {
-                  _isLecture = value;
+                  _isMgr = value;
                 });
               }),
         ],
       ),
     );
 
-    final isLabsField = Row(
+    final isInzField = Row(
       children: [
         Container(
           width: 100,
           child: const Text(
-            'Laboratoria',
+            'Inżynierska',
             style: TextStyle(
                 color: Constants.primaryColor,
                 fontFamily: 'OpenSans',
@@ -163,10 +236,10 @@ class _NewSubjectState extends State<NewSubject> {
         ),
         Checkbox(
             activeColor: Constants.primaryColor,
-            value: _isLabolatories,
+            value: _isInz,
             onChanged: (bool value) {
               setState(() {
-                _isLabolatories = value;
+                _isInz = value;
               });
             }),
       ],
@@ -189,15 +262,18 @@ class _NewSubjectState extends State<NewSubject> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: <Widget>[
-                      titleNameField,
-                      codeField,
-                      semesterNumberField,
-                      isLectureField,
-                      isLabsField,
-                      hoursField,
+                      nameAndSurnameField,
+                      indeksNumberField,
+                      recenzentField,
+                      promotorField,
+                      defenseYearField,
+                      titleInPolishField,
+                      titleInEnglishField,
+                      isInzField,
+                      isMgrField,
                       ElevatedButton(
                         child: Text(
-                          'Dodaj Przedmiot',
+                          'Dodaj Prace',
                           style: TextStyle(
                               color: Constants.primaryTextColor,
                               fontFamily: 'OpenSans',
@@ -212,16 +288,19 @@ class _NewSubjectState extends State<NewSubject> {
                               setState(() {
                                 _isLoading = true;
                               });
-                              subjectData.addSubject(
-                                code: _codeController.text,
-                                hours: _hoursController.text,
-                                isLabolatories: _isLabolatories,
-                                isLecture: _isLecture,
-                                name: _nameController.text,
-                                semesterNumber: _semesterNumberController.text,
+                              thesiesData.addThesis(
+                                indexNumber: _indexNumberController.text,
+                                isInz: _isInz,
+                                isMgr: _isMgr,
+                                nameAndSurname: _nameAndSurnameController.text,
+                                promotorName: _promotorNameController.text,
+                                recenzentName: _recenzentNameController.text,
+                                titleInEnglish: _titleInEnglishController.text,
+                                titleInPolish: _titleInPolishController.text,
+                                yearOfDefense: _yearOfDefenseController.text,
                               );
-                              _isLecture = false;
-                              _isLabolatories = false;
+                              _isInz = false;
+                              _isMgr = false;
                               setState(() {
                                 _isLoading = false;
                               });

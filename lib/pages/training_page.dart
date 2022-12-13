@@ -1,25 +1,24 @@
+import 'package:academic_app/providers/training.dart';
 import 'package:academic_app/shared/constants.dart';
 import 'package:academic_app/widgets/app_drawer.dart';
+import 'package:academic_app/widgets/new_training.dart';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/trips.dart';
-import '../widgets/new_trip.dart';
-
-class TripsPage extends StatefulWidget {
-  static String routeName = '/trips';
+class TrainingPage extends StatefulWidget {
+  static String routeName = '/trainings';
 
   @override
-  State<TripsPage> createState() => _TripsPageState();
+  State<TrainingPage> createState() => _TrainingPageState();
 }
 
-class _TripsPageState extends State<TripsPage> {
+class _TrainingPageState extends State<TrainingPage> {
   bool _isLoading = false;
   @override
   Widget build(BuildContext context) {
     final heightOfPage = MediaQuery.of(context).size.height;
-    final tripsData = Provider.of<Trips>(context);
+    final trainingsData = Provider.of<Trainings>(context);
     return Scaffold(
       appBar: AppBar(
         shape: const RoundedRectangleBorder(
@@ -28,7 +27,7 @@ class _TripsPageState extends State<TripsPage> {
           ),
         ),
         title: Text(
-          'Wyjazdy/Staże',
+          'Szkolenia',
           style: TextStyle(color: Constants.primaryTextColor),
         ),
         centerTitle: true,
@@ -42,7 +41,7 @@ class _TripsPageState extends State<TripsPage> {
                     builder: (_) {
                       return GestureDetector(
                         onTap: () {},
-                        child: NewTrip(),
+                        child: NewTraining(),
                         behavior: HitTestBehavior.opaque,
                       );
                     },
@@ -59,7 +58,7 @@ class _TripsPageState extends State<TripsPage> {
       drawer: AppDrawer(),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : tripsData.trips.length == 0
+          : trainingsData.trainings.length == 0
               ? Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Center(
@@ -71,28 +70,28 @@ class _TripsPageState extends State<TripsPage> {
                           height: 150,
                         ),
                         const Text(
-                          'Zaplanuj',
+                          'Dodaj',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Text(
-                          'swój',
+                          'swoje',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Text(
-                          'pierwszy',
+                          'pierwsze',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Text(
-                          'wyjazd/staż',
+                          'szkolenie',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -108,29 +107,26 @@ class _TripsPageState extends State<TripsPage> {
                       padding: const EdgeInsets.all(5),
                       child: Column(
                         children: [
-                          Text('Liczba wyjazdów: ${tripsData.trips.length}'),
+                          Text(
+                              'Liczba szkoleń: ${trainingsData.trainings.length}'),
                           Container(
                             height: (heightOfPage * 0.85),
                             width: MediaQuery.of(context).size.width,
                             child: GridView.builder(
                               itemBuilder: (context, index) {
-                                return TripItem(
-                                    tripsData.trips[index].city,
-                                    tripsData.trips[index].univeristyName,
-                                    tripsData.trips[index].dateFrom,
-                                    tripsData.trips[index].description,
-                                    tripsData.trips[index].dateTo,
-                                    tripsData.trips[index].fundName,
-                                    tripsData.trips[index].relatedProjectName,
-                                    tripsData.removeTrip);
+                                return TrainingItem(
+                                    trainingsData.trainings[index].address,
+                                    trainingsData.trainings[index].title,
+                                    trainingsData.trainings[index].certificate,
+                                    trainingsData.trainings[index].fundName,
+                                    trainingsData.removeTraining);
                               },
-                              itemCount: tripsData.trips.length,
+                              itemCount: trainingsData.trainings.length,
                               gridDelegate:
                                   SliverGridDelegateWithMaxCrossAxisExtent(
                                 maxCrossAxisExtent: 250,
-                                // childAspectRatio: (1 / 2),
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 30,
+                                crossAxisSpacing: 2,
+                                mainAxisSpacing: 2,
                               ),
                             ),
                           ),
@@ -149,7 +145,7 @@ class _TripsPageState extends State<TripsPage> {
             builder: (_) {
               return GestureDetector(
                 onTap: () {},
-                child: NewTrip(),
+                child: NewTraining(),
                 behavior: HitTestBehavior.opaque,
               );
             },
@@ -160,7 +156,7 @@ class _TripsPageState extends State<TripsPage> {
     );
   }
 
-  Widget TripRowItem(IconData icon, String text) {
+  Widget TrainingItemRow(IconData icon, String text) {
     return Row(
       children: [
         Icon(
@@ -184,15 +180,8 @@ class _TripsPageState extends State<TripsPage> {
     );
   }
 
-  Widget TripItem(
-      String city,
-      String univeristyName,
-      String dateFrom,
-      String description,
-      String dateTo,
-      String fundName,
-      String relatedProjectName,
-      Future<void> Function(String) deleteFunc) {
+  Widget TrainingItem(String address, String title, String certificate,
+      String fundName, Future<void> Function(String) deleteFunc) {
     return Column(
       children: [
         Flexible(
@@ -214,23 +203,20 @@ class _TripsPageState extends State<TripsPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.explore,
-                      color: Constants.primaryTextColor,
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Constants.primaryTextColor,
+                      ),
                     ),
                     SizedBox(height: 1),
-                    TripRowItem(Icons.location_city, city),
+                    TrainingItemRow(Icons.location_city, address),
                     SizedBox(height: 1),
-                    TripRowItem(Icons.school, univeristyName),
+                    TrainingItemRow(Icons.workspace_premium, certificate),
                     SizedBox(height: 1),
-                    TripRowItem(
-                        Icons.calendar_month, "${dateFrom} - ${dateTo}"),
-                    SizedBox(height: 1),
-                    TripRowItem(Icons.note_alt, description),
-                    SizedBox(height: 1),
-                    TripRowItem(Icons.payments, fundName),
-                    SizedBox(height: 1),
-                    TripRowItem(Icons.description, relatedProjectName),
+                    TrainingItemRow(Icons.payments, fundName),
                   ],
                 ),
               ),
@@ -242,7 +228,7 @@ class _TripsPageState extends State<TripsPage> {
               setState(() {
                 _isLoading = true;
               });
-              await deleteFunc(description);
+              await deleteFunc(title);
               setState(() {
                 _isLoading = false;
               });

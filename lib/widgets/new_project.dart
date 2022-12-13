@@ -1,81 +1,39 @@
 import 'dart:io';
+import 'package:academic_app/providers/projects.dart';
 import 'package:academic_app/providers/speeches.dart';
 import 'package:academic_app/shared/constants.dart';
+import 'package:academic_app/widgets/new_co_author.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../widgets/adaptive_flat_button.dart';
-import 'new_speech/new_co_author.dart';
+import 'adaptive_flat_button.dart';
 
-class NewSpeech extends StatefulWidget {
-  NewSpeech();
+class NewPublication extends StatefulWidget {
+  NewPublication();
 
   @override
-  _NewSpeechState createState() => _NewSpeechState();
+  _NewPublicationState createState() => _NewPublicationState();
 }
 
-class _NewSpeechState extends State<NewSpeech> {
+class _NewPublicationState extends State<NewPublication> {
   var _isLoading = false;
-  final _speechTitleController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _conferenceNameController = TextEditingController();
-  final _projectNameController = TextEditingController();
-  String _selectedToDate;
+  final _titleController = TextEditingController();
+  final _fundSourceController = TextEditingController();
+  final _competitionNameController = TextEditingController();
+  final _roleNameController = TextEditingController();
+  bool isInternational;
   String _selectedFromDate;
+  String _selectedToDate;
   final _formKey = GlobalKey<FormState>();
-
-  void _presentDateFromPicker() {
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2025),
-    ).then((pickedDate) {
-      if (pickedDate == null) {
-        return;
-      }
-      setState(() {
-        _selectedFromDate =
-            DateFormat('dd/MM/yyyy').format(pickedDate).toString();
-      });
-    });
-  }
-
-  void _presentDateToPicker() {
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2025),
-    ).then((pickedDate) {
-      if (pickedDate == null) {
-        return;
-      }
-      setState(() {
-        _selectedToDate =
-            DateFormat('dd/MM/yyyy').format(pickedDate).toString();
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    // TextField(
-    //           decoration: const InputDecoration(
-    //             labelText: 'Title',
-    //             labelStyle: TextStyle(
-    //               fontFamily: 'OpenSans',
-    //               fontWeight: FontWeight.w400,
-    //             ),
-    //           ),
-    //           controller: _nameController,
-    //           onSubmitted: (_) => _submitData(),
-    //         ),
-    final speechesData = Provider.of<Speeches>(context);
+    final projectsData = Provider.of<Projects>(context);
+
     final titleNameField = TextFormField(
       autofocus: false,
-      controller: _conferenceNameController,
+      controller: _titleController,
       keyboardType: TextInputType.text,
       validator: (value) {
         if (value.isEmpty) {
@@ -84,11 +42,11 @@ class _NewSpeechState extends State<NewSpeech> {
         return null;
       },
       onSaved: (value) {
-        _conferenceNameController.text = value;
+        _titleController.text = value;
       },
       textInputAction: TextInputAction.next,
       decoration: const InputDecoration(
-        labelText: 'Nazwa Konferencji',
+        labelText: 'Title',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -96,9 +54,9 @@ class _NewSpeechState extends State<NewSpeech> {
       ),
     );
 
-    final addressNameField = TextFormField(
+    final fundSourceField = TextFormField(
       decoration: const InputDecoration(
-        labelText: 'Address',
+        labelText: 'Źródło finansowania',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -106,22 +64,22 @@ class _NewSpeechState extends State<NewSpeech> {
       ),
       textInputAction: TextInputAction.next,
       autofocus: false,
-      controller: _addressController,
+      controller: _fundSourceController,
       keyboardType: TextInputType.text,
       onSaved: (value) {
-        _addressController.text = value;
+        _fundSourceController.text = value;
       },
       validator: (value) {
         if (value.isEmpty) {
-          return ("Address cannot be Empty");
+          return ("Źródło finansowania nie może być puste");
         }
         return null;
       },
     );
 
-    final speechTitleField = TextFormField(
+    final competitionNameField = TextFormField(
       decoration: const InputDecoration(
-        labelText: 'Tytuł Wystąpienia',
+        labelText: 'Typ konkursu',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -129,22 +87,22 @@ class _NewSpeechState extends State<NewSpeech> {
       ),
       textInputAction: TextInputAction.next,
       autofocus: false,
-      controller: _speechTitleController,
+      controller: _competitionNameController,
       keyboardType: TextInputType.text,
       onSaved: (value) {
-        _speechTitleController.text = value;
+        _competitionNameController.text = value;
       },
       validator: (value) {
         if (value.isEmpty) {
-          return ("Tytuł wystąpienia nie może być pusty");
+          return ("Typ konkursu nie może być pusty");
         }
         return null;
       },
     );
 
-    final relatedProjectNameField = TextFormField(
+    final myRoleField = TextFormField(
       decoration: const InputDecoration(
-        labelText: 'Powiązany projekt',
+        labelText: 'Moja Rola',
         labelStyle: TextStyle(
           fontFamily: 'OpenSans',
           fontWeight: FontWeight.w400,
@@ -152,15 +110,89 @@ class _NewSpeechState extends State<NewSpeech> {
       ),
       textInputAction: TextInputAction.next,
       autofocus: false,
-      controller: _projectNameController,
+      controller: _roleNameController,
       keyboardType: TextInputType.text,
       onSaved: (value) {
-        _projectNameController.text = value;
+        _roleNameController.text = value;
       },
       validator: (value) {
+        if (value.isEmpty) {
+          return ("Twoja rola w projekcie nie może być pusta");
+        }
         return null;
       },
     );
+
+    final isInternationalField = Row(children: [
+      Text(
+        'Projekt międzynarodowy?',
+        style: TextStyle(
+          fontFamily: 'OpenSans',
+          fontWeight: FontWeight.w500,
+          color: Constants.primaryColor,
+        ),
+      ),
+      SizedBox(
+        width: 5,
+      ),
+      DropdownButton(
+        style: TextStyle(
+          fontFamily: 'OpenSans',
+          fontWeight: FontWeight.w400,
+          color: Constants.primaryColor,
+        ),
+        icon: const Icon(Icons.arrow_downward),
+        items: [
+          DropdownMenuItem<bool>(
+            child: Text('Tak'),
+            value: true,
+          ),
+          DropdownMenuItem(
+            child: Text('Nie'),
+            value: false,
+          ),
+        ],
+        value: isInternational,
+        onChanged: (value) {
+          setState(() {
+            isInternational = value;
+          });
+        },
+      ),
+    ]);
+    void _presentDateFromPicker() {
+      showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2025),
+      ).then((pickedDate) {
+        if (pickedDate == null) {
+          return;
+        }
+        setState(() {
+          _selectedFromDate =
+              DateFormat('dd/MM/yyyy').format(pickedDate).toString();
+        });
+      });
+    }
+
+    void _presentDateToPicker() {
+      showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2025),
+      ).then((pickedDate) {
+        if (pickedDate == null) {
+          return;
+        }
+        setState(() {
+          _selectedToDate =
+              DateFormat('dd/MM/yyyy').format(pickedDate).toString();
+        });
+      });
+    }
 
     final dateFromPicker = Container(
       margin: EdgeInsets.symmetric(vertical: 2),
@@ -222,13 +254,14 @@ class _NewSpeechState extends State<NewSpeech> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       titleNameField,
-                      addressNameField,
+                      fundSourceField,
+                      competitionNameField,
+                      myRoleField,
+                      isInternationalField,
                       dateFromPicker,
                       dateToPicker,
-                      speechTitleField,
-                      relatedProjectNameField,
                       Text('Współwykonawcy'),
-                      speechesData.tempCoWorkers.length == 0
+                      projectsData.tempCoWorkers.length == 0
                           ? Text('Brak')
                           : SingleChildScrollView(
                               child: Flexible(
@@ -245,12 +278,12 @@ class _NewSpeechState extends State<NewSpeech> {
                                             width: 3,
                                           ),
                                           Text(
-                                              "${speechesData.tempCoWorkers[index]["name"]} (${speechesData.tempCoWorkers[index]["role"]})")
+                                              "${projectsData.tempCoWorkers[index]["name"]} (${projectsData.tempCoWorkers[index]["role"]})")
                                         ],
                                       );
                                     },
                                     itemCount:
-                                        speechesData.tempCoWorkers.length,
+                                        projectsData.tempCoWorkers.length,
                                   ),
                                 ),
                               ),
@@ -275,7 +308,7 @@ class _NewSpeechState extends State<NewSpeech> {
                           )),
                       ElevatedButton(
                         child: Text(
-                          'Dodaj Konferencje',
+                          'Dodaj Publikacje',
                           style: TextStyle(
                               color: Constants.primaryTextColor,
                               fontFamily: 'OpenSans',
@@ -290,16 +323,18 @@ class _NewSpeechState extends State<NewSpeech> {
                               setState(() {
                                 _isLoading = true;
                               });
-                              speechesData.addSpeech(
-                                speechTitle: _speechTitleController.text,
-                                conferenceName: _conferenceNameController.text,
-                                address: _addressController.text,
+                              projectsData.addProject(
+                                title: _titleController.text,
+                                roleName: _roleNameController.text,
+                                competitionName:
+                                    _competitionNameController.text,
                                 dateFrom: _selectedFromDate,
                                 dateTo: _selectedToDate,
-                                projectName: _projectNameController?.text,
-                                coAuthors: speechesData.tempCoWorkers,
+                                foundSource: _fundSourceController.text,
+                                isInternational: isInternational,
+                                coAuthors: projectsData.tempCoWorkers,
                               );
-                              speechesData.tempCoWorkers = [];
+                              projectsData.tempCoWorkers = [];
                               setState(() {
                                 _isLoading = false;
                               });

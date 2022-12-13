@@ -4,10 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class Trip {
-  final String address;
-  final String title;
-  final String date;
-  Trip({this.address, this.title, this.date});
+  final String city;
+  final String univeristyName;
+  final String dateTo;
+  final String dateFrom;
+  final String description;
+  final String fundName;
+  final String relatedProjectName;
+  Trip(
+      {@required this.city,
+      @required this.univeristyName,
+      @required this.dateFrom,
+      @required this.dateTo,
+      @required this.description,
+      @required this.fundName,
+      @required this.relatedProjectName});
 }
 
 class Trips with ChangeNotifier {
@@ -15,10 +26,26 @@ class Trips with ChangeNotifier {
   final _auth = FirebaseAuth.instance;
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
 
-  Future<void> addTrip({String address, String title, String date}) async {
-    await trips.add(Trip(address: address, title: title, date: date));
+  Future<void> addTrip(
+      {String city,
+      String univeristyName,
+      String dateFrom,
+      String dateTo,
+      String description,
+      String fundName,
+      String relatedProjectName}) async {
+    await trips.add(Trip(
+        city: city,
+        univeristyName: univeristyName,
+        dateFrom: dateFrom,
+        description: description,
+        dateTo: dateTo,
+        fundName: fundName,
+        relatedProjectName: relatedProjectName));
     User user = _auth.currentUser;
-    await firebaseFirestore.collection('trips').doc(user.uid).set(toMap());
+    Map<String, dynamic> dataToUpdate;
+    await toMap().then((value) => dataToUpdate = value);
+    await firebaseFirestore.collection('trips').doc(user.uid).set(dataToUpdate);
   }
 
   Future<void> fetchDataFromFirestore() async {
@@ -28,9 +55,14 @@ class Trips with ChangeNotifier {
       firebaseFirestore.collection('trips').doc(user.uid).get().then((value) {
         for (var element in value['trips'] as List) {
           trips.add(Trip(
-              address: element['address'],
-              date: element['date'],
-              title: element['title']));
+            city: element["city"],
+            univeristyName: element["univeristyName"],
+            dateTo: element["dateTo"],
+            dateFrom: element["dateFrom"],
+            description: element["description"],
+            fundName: element["fundName"],
+            relatedProjectName: element["relatedProjectName"],
+          ));
         }
       });
     } catch (e) {
@@ -38,24 +70,41 @@ class Trips with ChangeNotifier {
     }
   }
 
-  Future<void> removeTrip(String title) async {
+  Future<void> removeTrip(String description) async {
     await fetchDataFromFirestore();
-    await trips.removeWhere((element) => element.title == title);
+    await trips.removeWhere((element) => (element.description == description));
     User user = _auth.currentUser;
+    Map<String, dynamic> dataToUpdate;
+    await toMap().then((value) => dataToUpdate = value);
     try {
-      await firebaseFirestore.collection('trips').doc(user.uid).update(toMap());
+      await firebaseFirestore
+          .collection('trips')
+          .doc(user.uid)
+          .update(dataToUpdate);
     } catch (e) {
       Fluttertoast.showToast(msg: e.toString());
     }
   }
 
-  Map<String, dynamic> toMap() {
-    List<Map<String, String>> dataToReturn = [];
+  // city: element["city"],
+  //           univeristyName: element["univeristyName"],
+  //           dateTo: element["dateTo"],
+  //           dateFrom: element["dateFrom"],
+  //           description: element["description"],
+  //           fundName: element["fundName"],
+  //           relatedProjectName: element["relatedProjectName"],
+
+  Future<Map<String, dynamic>> toMap() async {
+    List<Map<String, dynamic>> dataToReturn = [];
     for (var element in trips) {
       dataToReturn.add({
-        'address': element.address,
-        'title': element.title,
-        'date': element.date
+        'city': element.city,
+        'univeristyName': element.univeristyName,
+        'dateFrom': element.dateFrom,
+        'description': element.description,
+        'dateTo': element.dateTo,
+        'fundName': element.fundName,
+        'relatedProjectName': element.relatedProjectName,
       });
     }
     return {'trips': dataToReturn};
